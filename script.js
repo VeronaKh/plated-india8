@@ -1,117 +1,70 @@
+// ===== SETTINGS (restaurant fills these in, see README) =====
+const CFG={restaurantEmail:'hello@platedindia.com',emailjsPublicKey:'',emailjsServiceId:'',emailjsTemplateId:''};
+// =============================================================
 const dishes=[
-// SIGNATURE GLOBAL PLATES
-{c:'Signature Global Plates - Non-Veg',n:'Korean Gochujang Glazed Chicken',d:'Grilled chicken thigh, Japanese steamed rice, house kimchi, sesame cucumber, charred broccoli & gochujang glaze.',p:895},
-{c:'Signature Global Plates - Non-Veg',n:'Mediterranean Harissa Chicken Supreme',d:'Harissa-spiced chicken, saffron rice, roasted seasonal vegetables, silky hummus, garlic yogurt, pickled onion & crisp pita.',p:925},
-{c:'Signature Global Plates - Non-Veg',n:'Mexican Chipotle Chicken',d:'Smoky chipotle chicken, cilantro rice, black beans, corn salsa, pico de gallo, fresh guacamole & artisan tortilla crisps.',p:875},
-{c:'Signature Global Plates - Non-Veg',n:'Japanese Teriyaki Salmon',d:'Pan-seared salmon, Japanese rice, edamame, pickled cucumber, wok-tossed seasonal vegetables & house teriyaki glaze.',p:1195},
-{c:'Signature Global Plates - Vegetarian',n:'Miso-Glazed Tofu Steak',d:'Seared silken tofu, white miso glaze, Japanese rice, edamame, sesame greens & pickled cucumber.',p:795},
-{c:'Signature Global Plates - Vegetarian',n:'Truffle Wild Mushroom Risotto',d:'Arborio rice, wild mushrooms, Parmesan, truffle essence & garden herbs.',p:825},
-{c:'Signature Global Plates - Vegetarian',n:'Charred Cauliflower & Harissa Bowl',d:'Charred cauliflower, saffron quinoa, hummus, roasted vegetables, chickpea crisp, pickled onion & herb oil.',p:725},
-// PREMIUM SIDES & SHARING PLATES
-{c:'Premium Sides & Sharing Plates - Non-Veg',n:'Crispy Korean Chicken Bites',d:'Buttermilk-marinated chicken, Korean-style glaze & sesame dip.',p:395},
-{c:'Premium Sides & Sharing Plates - Non-Veg',n:'Miso-Glazed Chicken Skewers',d:'Char-grilled chicken skewers, white miso glaze, spring onion, sesame & yuzu kosho dip.',p:425},
-{c:'Premium Sides & Sharing Plates - Non-Veg',n:'Prawn Tempura',d:'Tiger prawns in a delicate tempura, served with yuzu ponzu & wasabi aioli.',p:475},
-{c:'Premium Sides & Sharing Plates - Non-Veg',n:'Harissa Lamb Skewers',d:'Tender lamb skewers, North African harissa, smoked yogurt, pickled onion & fresh herbs.',p:495},
-{c:'Premium Sides & Sharing Plates - Vegetarian',n:'Parmesan & Truffle Fries',d:'Crisp fries, aged Parmesan, truffle essence & garden herbs.',p:375},
-{c:'Premium Sides & Sharing Plates - Vegetarian',n:'Spinach & Feta Croquettes',d:'Crisp croquettes filled with spinach, feta & garden herbs, served with roasted garlic dip.',p:350},
-{c:'Premium Sides & Sharing Plates - Vegan',n:'Edamame & Avocado Gyoza',d:'Delicate vegetable dumplings, edamame, avocado & sesame ponzu.',p:375},
-{c:'Premium Sides & Sharing Plates - Vegan',n:'Hummus & Warm Artisan Pita',d:'Silken hummus, extra virgin olive oil, za’atar & toasted pita.',p:295},
-{c:'Premium Sides & Sharing Plates - Vegan',n:'Chilli-Salted Edamame',d:'Steamed edamame, sea salt, chilli & toasted sesame.',p:295},
-{c:'Premium Sides & Sharing Plates - Vegan',n:'Roasted Seasonal Vegetables',d:'Market vegetables, herb oil & light balsamic glaze.',p:275},
-{c:'Premium Sides & Sharing Plates - Vegan',n:'Loaded Kimchi Fries',d:'Crisp fries, kimchi, gochujang aioli, sesame & spring onion.',p:325},
-// DRINKS
-{c:'Zero-Proof Collection',n:'Yuzu & Elderflower Lemonade',d:'',p:325},
-{c:'Zero-Proof Collection',n:'Watermelon & Mint Cooler',d:'',p:295},
-{c:'Zero-Proof Collection',n:'Passion Fruit & Ginger Sparkler',d:'',p:345},
-{c:'Zero-Proof Collection',n:'Lychee & Basil Refresher',d:'',p:325},
-{c:'Zero-Proof Collection',n:'Cucumber, Lime & Sea Salt Soda',d:'',p:295},
-{c:'Zero-Proof Collection',n:'Yuzu–Ginger & Shiso Spritz',d:'',p:375},
-{c:'Zero-Proof Collection',n:'Saffron Pistachio Lassi',d:'',p:375},
-{c:'Artisan Coffee & Tea',n:'Cold Brew',d:'',p:325},
-{c:'Artisan Coffee & Tea',n:'Iced Vanilla Latte',d:'',p:375},
-{c:'Artisan Coffee & Tea',n:'Ceremonial Matcha Latte',d:'',p:425},
-{c:'Artisan Coffee & Tea',n:'Hojicha Latte',d:'',p:425},
-{c:'Artisan Coffee & Tea',n:'Coconut Matcha Cloud',d:'',p:445},
-{c:'Artisan Coffee & Tea',n:'Iced Coconut Cold Brew',d:'',p:375},
-{c:'Artisan Coffee & Tea',n:'Espresso / Americano',d:'',p:275},
-{c:'Artisan Coffee & Tea',n:'Flat White',d:'',p:350},
-// DESSERTS
-{c:'Sweet Finale',n:'Matcha Basque Cheesecake',d:'Roasted hazelnut, cacao, vanilla ice cream',p:495},
-{c:'Sweet Finale',n:'Yuzu Panna Cotta',d:'',p:475},
-{c:'Sweet Finale',n:'Belgian Chocolate Lava Cake',d:'',p:525},
-{c:'Sweet Finale',n:'Classic Crème Brûlée',d:'',p:475},
-{c:'Sweet Finale',n:'Lemon Meringue Tart',d:'',p:475},
-{c:'Sweet Finale',n:'Pistachio & Rose Financier',d:'',p:425},
-{c:'Sweet Finale',n:'Mango & Passion Fruit Pavlova',d:'',p:475},
-{c:'Sweet Finale',n:'Crêpes Suzette',d:'',p:495},
-];
-
-/* Map each detailed category to one of the menu tabs */
-const groupOf=c=>
-  c.startsWith('Signature')?'Mains':
-  c.startsWith('Premium')?'Sides & Sharing':
-  (c.startsWith('Zero')||c.startsWith('Artisan'))?'Drinks':
-  c==='Sweet Finale'?'Desserts':c;
-
-/* Sub-heading text, e.g. "Signature Global Plates - Non-Veg" -> "Non-Veg" */
-const subOf=c=>c.includes(' - ')?c.split(' - ')[1]:c;
-
-dishes.forEach(x=>x.g=groupOf(x.c));
-
-const card=x=>`<article class="dish"><img src="${x.i}.jpg" alt="${x.n}" loading="lazy"><div><h3>${x.n}</h3><p>${x.d}</p><span class="price">₹${x.p}</span></div></article>`;
-const row=x=>`<div class="row"><div><h3>${x.n}</h3><p>${x.d}</p></div><b>₹${x.p}</b></div>`;
-const item=x=>x.i?card(x):row(x);
-
-/* Homepage signature section (only dishes that have an image; optional) */
+{c:'Mains',n:'Creamy Chicken Penne',d:'Garlic bread, basil, parmesan',p:695,i:'penne'},
+{c:'Mains',n:'Gochujang Chicken Bibimbap',d:'Sunny egg, pickled carrot, cucumber, rice',p:895,i:'bibimbap'},
+{c:'Mains',n:'Cilantro Lime Chicken Plate',d:'Black beans, guacamole, pico de gallo',p:745,i:'burrito'},
+{c:'Mains',n:'Chicken Fettuccine Alfredo',d:'Shaved parmesan, basil, garlic toast',p:725,i:'alfredo'},
+{c:'Desserts',n:'Matcha Basque Cheesecake',d:'Roasted hazelnut, cacao, vanilla ice cream',p:495},
+{c:'Desserts',n:'Yuzu Panna Cotta',d:'Apple, brown butter, crème fraîche, caramel',p:475},
+{c:'Desserts',n:'Lemon Meringue Tart',d:'Yuzu curd, meringue, sesame',p:475},
+{c:'Desserts',n:'Classic Crème Brûlée',d:'Poached pear, almond, honey, vanilla',p:475},
+{c:'Desserts',n:'Belgian Chocolate Lava Cake',d:'Caramel, cocoa nib, malted milk ice cream',p:525}].map((x,id)=>({...x,id}));
+const add=x=>`<button class="btn add" data-add="${x.id}">Add to cart</button>`;
+const card=(x,buy)=>`<article class="dish"><img src="${x.i}.jpg" alt="${x.n}" loading="lazy"><div><h3>${x.n}</h3><p>${x.d}</p><span class="price">₹${x.p}</span>${buy?add(x):''}</div></article>`;
+const row=x=>`<div class="row"><div><h3>${x.n}</h3><p>${x.d}</p></div><div class="buy"><b>₹${x.p}</b>${add(x)}</div></div>`;
 const sig=document.getElementById('signature');
-if(sig){
-  const feat=dishes.filter(x=>x.i).slice(0,3);
-  sig.innerHTML=(feat.length?feat:dishes.filter(x=>x.g==='Mains').slice(0,3)).map(item).join('');
-}
-
-/* Menu page */
+if(sig)sig.innerHTML=dishes.filter(x=>x.i).slice(0,3).map(x=>card(x,false)).join('');
 const ml=document.getElementById('menu-list');
-if(ml){
-  const tabs=document.querySelectorAll('.tabs button');
-  const showTab=g=>{
-    const items=dishes.filter(x=>x.g===g);
-    const subs=[...new Set(items.map(x=>x.c))];
-    ml.innerHTML=subs.map(s=>{
-      const list=items.filter(x=>x.c===s);
-      return `<h2 class="sub">${subOf(s)}</h2>`+list.map(item).join('');
-    }).join('');
-    tabs.forEach(t=>t.classList.toggle('on',t.dataset.c===g));
-  };
-  tabs.forEach(t=>t.onclick=()=>showTab(t.dataset.c));
-  showTab('Mains');
-}
+if(ml){const show=c=>{ml.innerHTML=c==='Mains'?'<div class="grid">'+dishes.filter(x=>x.c===c).map(x=>card(x,true)).join('')+'</div>':dishes.filter(x=>x.c===c).map(row).join('');
+document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.c===c))};
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.c));show('Mains')}
+const b=document.getElementById('burger');if(b)b.onclick=()=>document.querySelector('nav').classList.toggle('open');
 
-/* Mobile nav */
-const burger=document.getElementById('burger');
-if(burger)burger.onclick=()=>document.querySelector('nav').classList.toggle('open');
-
-/* Plated Circle spin wheel */
+// ===== Cart + order =====
+const drawer=document.getElementById('drawer');
+if(drawer){
+let cart={},mode='Dine In';
+try{cart=JSON.parse(localStorage.getItem('plated-cart')||'{}')}catch(e){}
+const $=id=>document.getElementById(id),money=n=>'₹'+n;
+const items=()=>Object.entries(cart).filter(([,q])=>q>0).map(([i,q])=>({...dishes[i],q}));
+const total=()=>items().reduce((s,x)=>s+x.p*x.q,0);
+const modeInfo={'Dine In':['Table number (optional)','Billing at the counter after your meal.'],'Take Away':['','Billing at the counter when you pick up your order.'],'Delivery':['Delivery address','Payment on delivery.']};
+const draw=()=>{const it=items(),n=it.reduce((s,x)=>s+x.q,0);
+try{localStorage.setItem('plated-cart',JSON.stringify(cart))}catch(e){}
+$('cart-n').textContent=n;$('cart-btn').hidden=n===0&&drawer.hidden;
+$('cart-items').innerHTML=it.length?it.map(x=>`<div class="row"><div><h3>${x.n}</h3><p>${money(x.p)} each</p></div><div class="qty"><button data-dec="${x.id}" aria-label="Less">−</button><span>${x.q}</span><button data-inc="${x.id}" aria-label="More">+</button></div></div>`).join(''):'<p class="muted">Your cart is empty.</p>';
+$('cart-total').textContent=money(total());$('place').disabled=!it.length;
+$('mode-label').textContent=mode;const [ph,note]=modeInfo[mode];
+$('extra').hidden=!ph;$('extra').placeholder=ph;$('extra').required=mode==='Delivery';$('pay-note').textContent=note};
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('#modes button').forEach(x=>x.classList.toggle('on',x===b));draw()});
+document.addEventListener('click',e=>{const t=e.target,g=k=>t.dataset[k];
+if(g('add')!==undefined){cart[g('add')]=(cart[g('add')]||0)+1;t.textContent='Added ✓';setTimeout(()=>t.textContent='Add to cart',900)}
+if(g('inc')!==undefined)cart[g('inc')]++;if(g('dec')!==undefined)cart[g('dec')]=Math.max(0,cart[g('dec')]-1);draw()});
+$('cart-btn').onclick=()=>{drawer.hidden=false;$('cart-btn').hidden=true};
+$('close').onclick=()=>{drawer.hidden=true;draw()};
+$('order').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target),id='PL-'+Math.random().toString(36).slice(2,8).toUpperCase();
+const lines=items().map(x=>`${x.q} × ${x.n} (${money(x.p*x.q)})`),name=f.get('name'),extra=f.get('extra')||'-';
+const details=`Order ${id}<br>Type: ${mode}<br>${lines.join('<br>')}<br><b>Total: ${money(total())}</b><br>${modeInfo[mode][1]}`;
+const customer={to_email:f.get('email'),to_name:name,subject:'Thank you for your order at Plated ('+id+')',message:`Hi ${name},<br><br>Thank you for your order! We have received your order and are preparing it.<br><br>${details}<br><br>See you soon,<br>Team Plated`};
+const owner={to_email:CFG.restaurantEmail,to_name:'Plated team',subject:'New order '+id+' ('+mode+')',message:`${details}<br><br>Customer: ${name}<br>Phone: ${f.get('phone')}<br>Email: ${f.get('email')}<br>${mode==='Delivery'?'Address':'Table'}: ${extra}`};
+$('place').disabled=true;$('place').textContent='Sending…';let live=false;
+try{if(window.emailjs&&CFG.emailjsPublicKey){const o={publicKey:CFG.emailjsPublicKey};
+await emailjs.send(CFG.emailjsServiceId,CFG.emailjsTemplateId,customer,o);await emailjs.send(CFG.emailjsServiceId,CFG.emailjsTemplateId,owner,o);live=true}}catch(err){console.error(err)}
+if(!live)location.href=`mailto:${CFG.restaurantEmail}?subject=${encodeURIComponent(owner.subject)}&body=${encodeURIComponent(owner.message.replace(/<br>/g,'\n').replace(/<\/?b>/g,''))}`;
+e.target.hidden=true;$('done').hidden=false;
+$('done').innerHTML=`<h3>Thank you, ${name}!</h3><p>We have received your order <b>${id}</b>.${live?' A confirmation email is on its way to '+f.get('email')+'.':' (Demo mode: email sending is not connected yet.)'}</p><p>${modeInfo[mode][1]}</p>`;
+cart={};draw()};
+draw()}
 const w=document.getElementById('wheel');
-if(w){
-  const prizes=['5% off','10% off','Free dessert','15% off','20% off','10% off'];
-  prizes.forEach((t,i)=>{const s=document.createElement('span');s.textContent=t;s.style.transform=`rotate(${i*60+30}deg)`;w.appendChild(s)});
-  const out=document.getElementById('result'),btn=document.getElementById('spin');
-  const showPrize=(p,code)=>{out.hidden=false;out.innerHTML=`<p>Your lifetime Plated Circle benefit</p><strong>${p}</strong><p>Member code <b>${code}</b>. Show it at your table.</p>`;btn.disabled=true;btn.textContent='Already unlocked'};
-  const saved=JSON.parse(localStorage.getItem('plated-circle')||'null');
-  if(saved)showPrize(saved.p,saved.code);
-  btn.onclick=()=>{
-    const i=Math.floor(Math.random()*6);
-    w.style.transform=`rotate(${360*6-(i*60+30)}deg)`;btn.disabled=true;
-    setTimeout(()=>{
-      const r={p:prizes[i],code:'PC-'+Math.random().toString(36).slice(2,7).toUpperCase()};
-      localStorage.setItem('plated-circle',JSON.stringify(r));showPrize(r.p,r.code);
-    },5200);
-  };
-}
-
-/* Contact form */
+if(w){const prizes=['5% off','10% off','Free dessert','15% off','20% off','10% off'];
+prizes.forEach((t,i)=>{const s=document.createElement('span');s.textContent=t;s.style.transform=`rotate(${i*60+30}deg)`;w.appendChild(s)});
+const out=document.getElementById('result'),btn=document.getElementById('spin');
+const show=(p,code)=>{out.hidden=false;out.innerHTML=`<p>Your lifetime Plated Circle benefit</p><strong>${p}</strong><p>Member code <b>${code}</b>. Show it at your table.</p>`;btn.disabled=true;btn.textContent='Already unlocked'};
+const saved=JSON.parse(localStorage.getItem('plated-circle')||'null');if(saved)show(saved.p,saved.code);
+btn.onclick=()=>{const i=Math.floor(Math.random()*6);w.style.transform=`rotate(${360*6-(i*60+30)}deg)`;btn.disabled=true;
+setTimeout(()=>{const r={p:prizes[i],code:'PC-'+Math.random().toString(36).slice(2,7).toUpperCase()};localStorage.setItem('plated-circle',JSON.stringify(r));show(r.p,r.code)},5200)}}
 const f=document.getElementById('form');
-if(f)f.onsubmit=e=>{
-  e.preventDefault();const d=new FormData(f);
-  location.href=`mailto:hello@platedindia.com?subject=${encodeURIComponent(d.get('topic')+' – '+d.get('name'))}&body=${encodeURIComponent(d.get('message')+'\n\n'+d.get('name')+' / '+d.get('email'))}`;
-};
+if(f)f.onsubmit=e=>{e.preventDefault();const d=new FormData(f);
+location.href=`mailto:hello@platedindia.com?subject=${encodeURIComponent(d.get('topic')+' – '+d.get('name'))}&body=${encodeURIComponent(d.get('message')+'\n\n'+d.get('name')+' / '+d.get('email'))}`};

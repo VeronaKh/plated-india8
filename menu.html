@@ -5,8 +5,15 @@
 <link rel="stylesheet" href="style.css"></head><body>
 <header><a class="logo" href="index.html">Plated</a><button id="burger" aria-label="Menu">☰</button><nav>
 <a href="index.html">Home</a><a href="menu.html" class=on>Menu</a><a href="about.html">About</a><a href="circle.html">Plated Circle</a><a href="contact.html">Contact</a><a class="btn" href="contact.html#reserve">Book a table</a></nav></header>
-<main><div class="page-top"><h1>Menu</h1><p>Every dish is a full plate. Prices in Indian rupees.</p></div>
-<section><div class="tabs"><button data-c="Mains">Mains</button><button data-c="Desserts">Desserts</button></div><div id="menu-list"></div></section></main><footer><div><span class="logo">Plated</span><p>One plate, whole world.</p></div>
+<main><div class="page-top"><h1>Menu</h1><p>Every dish is a full plate. Choose how you would like to enjoy it.</p><div class="modes" id="modes"><button data-m="Dine In" class="on">Dine In</button><button data-m="Take Away">Take Away</button><button data-m="Delivery">Delivery</button></div></div>
+<section><div class="tabs"><button data-c="Mains">Mains</button><button data-c="Desserts">Desserts</button></div><div id="menu-list"></div></section></main>
+<button id="cart-btn" class="btn" hidden>Your order · <span id="cart-n">0</span></button>
+<aside id="drawer" hidden><div class="panel"><button id="close" aria-label="Close">×</button><h2>Your order</h2>
+<p id="mode-label" class="muted"></p><div id="cart-items"></div><div class="row"><h3>Total</h3><b id="cart-total"></b></div>
+<form id="order"><input name="name" placeholder="Your name" required><input name="email" type="email" placeholder="Email for confirmation" required><input name="phone" type="tel" placeholder="Phone number" required>
+<input name="extra" id="extra" placeholder=""><p class="muted" id="pay-note"></p><button class="btn" type="submit" id="place">Place order</button></form>
+<div id="done" hidden></div></div></aside>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script><footer><div><span class="logo">Plated</span><p>One plate, whole world.</p></div>
 <div><b>Visit</b><p>Panchsheel Park Market,<br>near Hauz Khas, New Delhi<br>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</p></div>
 <div><b>Say hello</b><a href="tel:+919812345678">+91 9812345678</a><a href="mailto:hello@platedindia.com">hello@platedindia.com</a><a href="https://www.instagram.com/platedpanchsheel">Instagram</a></div>
 <small>© 2026 Plated. All rights reserved.</small></footer><script src="script.js"></script></body></html>

@@ -1,135 +1,14 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contact | Plated</title><meta name="description" content="Plated: one complete, premium dish at a time, reimagined from the world's favourite comfort foods. New Delhi.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<style>
-/* Contact form additions, using the site palette from style.css */
-#resFields{display:grid;gap:16px}
-#formStatus{font-size:.95rem;color:var(--forest);min-height:1.8em}
-.btn:disabled{opacity:.6;cursor:wait}
-</style></head><body>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body>
 <header><a class="logo" href="index.html">Plated</a><button id="burger" aria-label="Menu">☰</button><nav>
-<a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="circle.html">Plated Circle</a><a href="contact.html" class="on">Contact</a><a class="btn" href="contact.html#reserve">Book a table</a></nav></header>
+<a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="circle.html">Plated Circle</a><a href="contact.html" class=on>Contact</a><a class="btn" href="contact.html#reserve">Book a table</a></nav></header>
 <main><div class="page-top"><h1>Contact</h1><p>Questions, bookings, or a hello.</p></div>
 <section><div class="split" style="align-items:start"><div class="info"><p><b>Address</b>Panchsheel Park Market, near Hauz Khas, New Delhi</p><p><b>Opening hours</b>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</p><p><b>Phone</b><a href="tel:+919812345678">+91 9812345678</a></p><p><b>Email</b><a href="mailto:hello@platedindia.com">hello@platedindia.com</a></p></div>
-<div id="reserve"><h2 style="font-size:2.2rem">Book a table or write to us</h2>
-<form id="form">
-<input name="name" placeholder="Your name" required>
-<input name="email" type="email" placeholder="Email" required>
-<select name="topic" id="topic"><option>Table reservation</option><option>Question</option><option>Feedback</option></select>
-
-<!-- Reservation-only fields (shown when "Table reservation" is selected) -->
-<div id="resFields">
-<input name="date" id="resDate" type="date" required>
-<input name="time" id="resTime" type="time" min="12:30" max="22:30" required>
-<input name="guests" id="resGuests" type="number" min="1" max="12" placeholder="Number of guests" required>
-</div>
-
-<textarea name="message" id="message" rows="5" placeholder="Anything we should know? (allergies, occasion, seating preference)"></textarea>
-<button class="btn" id="sendBtn" type="submit">Send message</button>
-<p id="formStatus" role="status" aria-live="polite"></p>
-</form></div></div></section></main><footer><div><span class="logo">Plated</span><p>One plate, whole world.</p></div>
+<div id="reserve"><h2 style="font-size:2.2rem">Book a table or write to us</h2><form id="form"><input name="name" placeholder="Your name" required><input name="email" type="email" placeholder="Email" required>
+<select name="topic"><option>Table reservation</option><option>Question</option><option>Feedback</option></select><textarea name="message" rows="5" placeholder="Date, time and number of guests, or your message" required></textarea><button class="btn" type="submit">Send message</button></form></div></div></section></main><footer><div><span class="logo">Plated</span><p>One plate, whole world.</p></div>
 <div><b>Visit</b><p>Panchsheel Park Market,<br>near Hauz Khas, New Delhi<br>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</p></div>
 <div><b>Say hello</b><a href="tel:+919812345678">+91 9812345678</a><a href="mailto:hello@platedindia.com">hello@platedindia.com</a><a href="https://www.instagram.com/platedpanchsheel">Instagram</a></div>
-<small>© 2026 Plated. All rights reserved.</small></footer>
-
-<!-- Keep your existing site script (menu burger etc.) -->
-<script src="script.js"></script>
-
-<!-- EmailJS library -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-(function () {
-  /* ============ FILL THESE IN FROM YOUR EMAILJS DASHBOARD ============ */
-  var PUBLIC_KEY        = "YOUR_PUBLIC_KEY";
-  var SERVICE_ID        = "YOUR_SERVICE_ID";
-  var TEMPLATE_GUEST    = "YOUR_GUEST_CONFIRMATION_TEMPLATE_ID"; // sent to the customer (reservations only)
-  var TEMPLATE_OWNER    = "YOUR_OWNER_NOTIFICATION_TEMPLATE_ID"; // sent to hello@platedindia.com (every submission)
-  /* =================================================================== */
-
-  emailjs.init({ publicKey: PUBLIC_KEY });
-
-  var form      = document.getElementById("form");
-  var topic     = document.getElementById("topic");
-  var resFields = document.getElementById("resFields");
-  var dateEl    = document.getElementById("resDate");
-  var timeEl    = document.getElementById("resTime");
-  var guestsEl  = document.getElementById("resGuests");
-  var message   = document.getElementById("message");
-  var btn       = document.getElementById("sendBtn");
-  var status    = document.getElementById("formStatus");
-
-  // No bookings in the past
-  var today = new Date();
-  dateEl.min = today.getFullYear() + "-" +
-               String(today.getMonth() + 1).padStart(2, "0") + "-" +
-               String(today.getDate()).padStart(2, "0");
-
-  // Show date/time/guests only for table reservations
-  function toggleReservationFields() {
-    var isRes = topic.value === "Table reservation";
-    resFields.style.display = isRes ? "" : "none";
-    [dateEl, timeEl, guestsEl].forEach(function (el) { el.required = isRes; el.disabled = !isRes; });
-    message.required = !isRes;
-    message.placeholder = isRes
-      ? "Anything we should know? (allergies, occasion, seating preference)"
-      : "Your message";
-  }
-  topic.addEventListener("change", toggleReservationFields);
-  toggleReservationFields();
-
-  function setStatus(text, ok) {
-    status.textContent = text;
-    status.style.color = ok ? "" : "#8a3b2c";
-  }
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    e.stopImmediatePropagation(); // prevents any older submit handler in script.js from also firing
-
-    var isRes = topic.value === "Table reservation";
-
-    // Plated is closed on Mondays
-    if (isRes) {
-      var d = new Date(dateEl.value + "T00:00:00");
-      if (d.getDay() === 1) {
-        setStatus("We're closed on Mondays. Please pick another day (Tue–Sun).", false);
-        return;
-      }
-    }
-
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-    setStatus("", true);
-
-    // 1) Always notify the restaurant
-    var sendOwner = emailjs.sendForm(SERVICE_ID, TEMPLATE_OWNER, form);
-
-    // 2) Reservations also get a confirmation email to the guest
-    sendOwner
-      .then(function () {
-        return isRes ? emailjs.sendForm(SERVICE_ID, TEMPLATE_GUEST, form) : null;
-      })
-      .then(function () {
-        setStatus(
-          isRes
-            ? "Thank you! Your table request has been received. Please check your email for confirmation."
-            : "Thank you! We've received your message and will reply soon.",
-          true
-        );
-        form.reset();
-        toggleReservationFields();
-      })
-      .catch(function (err) {
-        console.error("EmailJS error:", err);
-        setStatus("Sorry, something went wrong. Please call us on +91 9812345678.", false);
-      })
-      .finally(function () {
-        btn.disabled = false;
-        btn.textContent = "Send message";
-      });
-  }, true);
-})();
-</script>
-</body></html>
+<small>© 2026 Plated. All rights reserved.</small></footer><script src="script.js"></script></body></html>
