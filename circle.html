@@ -1,13 +1,479 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Plated Circle | Plated</title><meta name="description" content="Plated: one complete, premium dish at a time, reimagined from the world's favourite comfort foods. New Delhi.">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"></head><body>
-<header><a class="logo" href="index.html">Plated</a><button id="burger" aria-label="Menu">☰</button><nav>
-<a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="circle.html" class=on>Plated Circle</a><a href="contact.html">Contact</a><a class="btn" href="contact.html#reserve">Book a table</a></nav></header>
-<main><section class="circle" style="padding-top:150px"><h1 style="font-size:clamp(3rem,8vw,6rem)">Plated Circle</h1><p style="max-width:50ch;margin:20px auto 0">Our lifetime loyalty programme. Spin the wheel to reveal your permanent member benefit.</p>
-<div class="wheelbox"><div id="wheel"></div></div><button class="btn" id="spin">Spin to unlock</button><div id="result" hidden></div></section>
-<section><h2>What you get</h2><div class="perks"><div><h3>Lifetime benefit</h3><p>Your prize applies every time you dine with us.</p></div><div><h3>Priority booking</h3><p>First pick of tables on busy evenings.</p></div><div><h3>Early access</h3><p>Try new seasonal plates before the menu changes.</p></div></div></section></main><footer><div><span class="logo">Plated</span><p>One plate, whole world.</p></div>
-<div><b>Visit</b><p>Panchsheel Park Market,<br>near Hauz Khas, New Delhi<br>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</p></div>
-<div><b>Say hello</b><a href="tel:+919812345678">+91 9812345678</a><a href="mailto:hello@platedindia.com">hello@platedindia.com</a><a href="https://www.instagram.com/platedpanchsheel">Instagram</a></div>
-<small>© 2026 Plated. All rights reserved.</small></footer><script src="script.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plated Circle | Plated</title>
+<meta name="description" content="Plated Circle: earn points, unlock tiers, redeem cashback and free plates.">
+<link rel="stylesheet" href="style.css">
+<style>
+.hero{background:var(--forest);color:var(--porcelain);padding:48px 5vw 64px;text-align:center}
+.hero h1{font-family:var(--display);font-size:clamp(2.6rem,7vw,4.4rem);line-height:1.05;font-weight:400}
+.hero p{max-width:46ch;margin:18px auto 40px;font-weight:300;font-size:1.15rem;line-height:1.8}
+.wheel-box{text-align:center}
+.wheel-wrap{position:relative;width:min(340px,80vw);margin:0 auto 36px}
+.wheel-wrap canvas{width:100%;height:auto;border-radius:50%;border:3px solid var(--saffron);box-shadow:0 0 0 16px #4c5646;transition:transform 4.5s cubic-bezier(.12,.7,.1,1)}
+.pointer{position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:0;height:0;border:18px solid transparent;border-top:36px solid var(--saffron);z-index:2}
+#spinResult{min-height:1.6em;margin-top:16px;letter-spacing:.04em}
+main{padding:0 5vw 64px}
+section{padding:48px 0 0}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4vw,2.4rem);margin-bottom:8px}
+.sub{color:var(--muted);max-width:60ch;margin-bottom:24px}
+.grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+.panel h3{font-size:1.1rem;margin-bottom:12px}
+label{display:block;font-size:.9rem;font-weight:500;margin:12px 0 4px}
+input,select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:0;font:inherit;background:#fff}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin-top:14px}
+.check input{width:auto;margin-top:5px}
+.panel .btn{margin-top:18px}
+/* member card */
+.card{border-radius:var(--r);padding:24px;color:var(--porcelain);background:var(--forest);min-height:200px;display:flex;flex-direction:column;justify-content:space-between}
+.card.gold{background:var(--saffron);color:var(--ink)}
+.card.black{background:#1c231e}
+.card .tier{font-family:var(--display);font-size:1.6rem}
+.card .pts{font-size:2.6rem;font-weight:700;line-height:1}
+.card small{opacity:.8}
+.bar{height:8px;background:#ffffff33;border-radius:99px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--saffron);width:0}
+.card.gold .bar{background:#26302a33}.card.gold .bar i{background:var(--ink)}
+.bar.dark{background:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.tablewrap{overflow-x:auto}
+.bill{margin-top:14px;font-size:.95rem}
+.bill div{display:flex;justify-content:space-between;padding:4px 0}
+.bill .total{font-weight:700;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.stat{font-size:2rem;font-family:var(--display)}
+.msg{background:var(--porcelain);border-left:4px solid var(--saffron);padding:12px 14px;border-radius:0;font-size:.92rem;margin-top:10px}
+#qr{display:flex;justify-content:center;padding:12px;background:#fff}
+.notice{display:none;margin-top:12px;color:var(--forest);font-weight:500}
+/* loop flowchart */
+.loopbox{max-width:640px;margin:0 auto;padding:16px}
+#loopSvg{width:100%;height:auto;display:block;overflow:visible}
+#loopSvg .node{cursor:pointer}
+#loopSvg .node text{font-family:var(--body)}
+#loopSvg .node:focus-visible circle.hit{stroke:var(--saffron);stroke-width:3}
+#loopSvg .pulse{animation:pulse 2s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+#plateRing{max-width:220px;margin:0 auto 16px}
+/* chef's mystery plate */
+#mSvg{width:100%;max-width:380px;height:auto;display:block;margin:0 auto}
+#mCloche{transform-origin:150px 186px;transition:transform .9s cubic-bezier(.3,.7,.2,1),opacity .9s}
+#mCloche.lift{transform:translate(46px,-120px) rotate(16deg);opacity:0}
+#mDish{opacity:0;transition:opacity .6s .5s}
+#mDish.show{opacity:1}
+#mInfo .dish{font-family:var(--display);font-size:1.9rem;line-height:1.2;margin:6px 0}
+#mInfo .code{display:inline-block;border:1px dashed var(--saffron);padding:8px 14px;margin-top:14px;letter-spacing:.12em;font-family:var(--display)}
+.locked{opacity:.45;pointer-events:none}
+@media(prefers-reduced-motion:reduce){#mCloche,#mDish{transition:none}#loopSvg .pulse{animation:none;opacity:0}.wheel-wrap canvas{transition:none}</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a class="logo" href="index.html">Plated</a>
+  <button class="menu-toggle" aria-expanded="false" aria-controls="nav" aria-label="Menu">☰</button>
+  <nav id="nav">
+    <a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a href="circle.html" aria-current="page">Plated Circle</a><a href="contact.html">Contact</a><a class="nav-cta" href="contact.html#reserve">Book a table</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div>
+    <h1>Plated Circle</h1>
+    <p>Our lifetime loyalty programme. Spin the wheel to reveal your permanent member benefit, then earn points on every plate.</p>
+    <a class="btn" href="#join">Join the Circle</a>
+  </div>
+  <div class="wheel-box">
+    <div class="wheel-wrap"><div class="pointer"></div><canvas id="wheel" width="680" height="680" aria-label="Prize wheel"></canvas></div>
+    <button class="btn" id="spinBtn" disabled>Join first to spin</button>
+    <p id="spinResult" aria-live="polite"></p>
+  </div>
+</div>
+
+<main>
+  <!-- THE LOOP (the flowchart, live) -->
+  <section id="loop">
+    <h2>The Circle loop</h2>
+    <p class="sub">Every visit takes you one stop round. Tap any stop to jump to it. Your own progress lights up as you go.</p>
+    <div class="panel loopbox"><svg id="loopSvg" viewBox="0 0 560 480" role="group" aria-label="Plated Circle loyalty loop"></svg></div>
+  </section>
+
+  <!-- JOIN + MEMBER CARD -->
+  <section id="join">
+    <h2>Your membership</h2>
+    <p class="sub">Join with your phone number. Birthday and anniversary let us surprise you with a dessert.</p>
+    <div class="grid">
+      <div class="panel" id="joinPanel">
+        <h3>Join in 30 seconds</h3>
+        <label for="jName">Name</label><input id="jName" autocomplete="name">
+        <label for="jPhone">Mobile number</label><input id="jPhone" inputmode="numeric" maxlength="10" autocomplete="tel">
+        <label for="jDob">Birthday</label><input id="jDob" type="date">
+        <label for="jAnn">Anniversary (optional)</label><input id="jAnn" type="date">
+        <label for="jRef">Friend's referral code (optional)</label><input id="jRef" placeholder="PLT-XXXX">
+        <label class="check"><input type="checkbox" id="jSms" checked> Send me offers and reminders by SMS/WhatsApp</label>
+        <button class="btn" id="joinBtn">Join Plated Circle</button>
+        <p class="notice" id="joinErr"></p>
+      </div>
+      <div id="cardPanel">
+        <div class="card" id="memberCard">
+          <div><small>Plated Circle member</small><div class="tier" id="cTier">Silver</div></div>
+          <div><div class="pts" id="cPts">0</div><small>Plated Points available</small>
+            <div class="bar"><i id="cBar"></i></div><small id="cNext">Join to start earning</small></div>
+          <small id="cMeta">Not a member yet</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EARN + REDEEM -->
+  <section id="earn" class="locked">
+    <h2>Earn and redeem</h2>
+    <p class="sub">Every ₹100 you spend earns 10 Plated Points (PP), on every channel. 100 PP = ₹100 off your bill.</p>
+    <div class="grid">
+      <div class="panel">
+        <h3>Log a bill</h3>
+        <label for="bAmt">Bill amount (₹)</label><input id="bAmt" type="number" min="0" value="1200">
+        <label for="bChan">Channel</label>
+        <select id="bChan"><option>Dine-in</option><option>Takeaway</option><option>Online order</option></select>
+        <label for="bDish">Favourite plate this visit</label>
+        <select id="bDish"></select>
+        <label class="check"><input type="checkbox" id="bRedeem"> Redeem my points on this bill</label>
+        <div class="bill" id="billBox"></div>
+        <button class="btn" id="billBtn">Add to my Circle</button>
+      </div>
+      <div class="panel">
+        <h3>Your plate</h3>
+        <div id="plateRing"></div>
+        <p id="mText" class="sub" style="margin-bottom:8px"></p>
+        <div class="bar dark"><i id="mBar"></i></div>
+        <div class="msg" id="mReward">Visit 5: free dessert. Visit 10: free signature plate.</div>
+        <h3 style="margin-top:24px">Your lifetime benefit</h3>
+        <p id="lifeBenefit" class="sub" style="margin:0">Spin the wheel to reveal it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHEF'S MYSTERY PLATE -->
+  <section id="mystery">
+    <h2>Chef's mystery plate</h2>
+    <p class="sub">Gold and Black members get one secret plate every month. Lift the cover to see what the chef made for you. A new plate opens on the 1st.</p>
+    <div class="grid">
+      <div class="panel">
+        <svg id="mSvg" viewBox="0 0 300 230" role="img" aria-label="A covered plate">
+          <ellipse cx="150" cy="198" rx="130" ry="22" fill="#dfe2db"/>
+          <ellipse cx="150" cy="190" rx="118" ry="20" fill="#fbfbf7" stroke="#cfd5c8"/>
+          <g id="mDish"><ellipse cx="150" cy="184" rx="62" ry="13" fill="#adbaa7"/><ellipse cx="150" cy="172" rx="44" ry="15" fill="#d7dfd2"/><circle cx="140" cy="160" r="8" fill="#a99a6c"/><circle cx="162" cy="164" r="5" fill="#38453b"/><circle cx="152" cy="150" r="4" fill="#a99a6c"/></g>
+          <g id="mCloche">
+            <path d="M38,188 C38,66 262,66 262,188 Z" fill="#adbaa7" stroke="#a99a6c" stroke-width="3"/>
+            <path d="M70,170 C72,112 110,88 150,86" fill="none" stroke="#f5f6ef" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+            <circle cx="150" cy="70" r="9" fill="#a99a6c"/>
+            <rect x="30" y="186" width="240" height="8" rx="4" fill="#a99a6c"/>
+            <text id="mLock" x="150" y="150" text-anchor="middle" font-size="20" font-family="Georgia,serif" fill="#26302a">Sealed</text>
+          </g>
+        </svg>
+      </div>
+      <div class="panel" id="mInfo"></div>
+    </div>
+  </section>
+
+  <!-- TIERS -->
+  <section id="tiers">
+    <h2>Tiers and perks</h2>
+    <p class="sub">Tiers are based on lifetime points earned, so you never drop down a level.</p>
+    <div class="panel tablewrap">
+      <table>
+        <tr><th>Perk</th><th>Silver<br><small>0 PP</small></th><th>Gold<br><small>1,000 PP</small></th><th>Black<br><small>3,000 PP</small></th></tr>
+        <tr><td>Points earned</td><td>10 per ₹100</td><td>12 per ₹100</td><td>15 per ₹100</td></tr>
+        <tr><td>Lifetime spin benefit</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Priority booking</td><td>Busy evenings</td><td>Busy evenings</td><td>Always, plus reserved VIP table</td></tr>
+        <tr><td>Early access to seasonal plates</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Monthly chef's special (members only)</td><td>-</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Monthly bonus spin</td><td>-</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Birthday and anniversary dessert</td><td>Yes</td><td>Yes</td><td>Yes, plus a plate for two</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- QR + REFER -->
+  <section id="share">
+    <h2>Scan, share, bring a friend</h2>
+    <p class="sub">Table QR codes open this page so guests can join, check points and redeem without an app. Referrals earn both of you 100 bonus points.</p>
+    <div class="grid">
+      <div class="panel"><h3>Table QR code</h3><div id="qr"></div>
+        <p class="sub" style="margin:10px 0 0">Print this on table tents, bills and takeaway packaging.</p></div>
+      <div class="panel"><h3>Your referral code</h3>
+        <div class="stat" id="refCode">Join to get one</div>
+        <button class="btn" id="copyRef" disabled>Copy code</button>
+        <a class="btn alt" id="waRef" href="#" target="_blank" rel="noopener" style="display:none">Share on WhatsApp</a>
+        <p class="sub" style="margin:14px 0 0">Tag @platedpanchsheel on a story with your plate and we add 25 bonus points.</p></div>
+    </div>
+  </section>
+
+  <!-- PERSONALISED + SMS + ANALYTICS -->
+  <section id="insights" class="locked">
+    <h2>Made for you</h2>
+    <p class="sub">What we learn from your visits shapes the offers we send you.</p>
+    <div class="grid">
+      <div class="panel"><h3>Your Circle in numbers</h3>
+        <div class="grid" style="grid-template-columns:repeat(2,1fr);gap:12px">
+          <div><div class="stat" id="aVisits">0</div><small>visits</small></div>
+          <div><div class="stat" id="aAvg">₹0</div><small>average bill</small></div>
+          <div><div class="stat" id="aChan">-</div><small>favourite channel</small></div>
+          <div><div class="stat" id="aDish">-</div><small>favourite plate</small></div>
+        </div>
+      </div>
+      <div class="panel"><h3>Messages you'll receive</h3>
+        <div class="msg" id="sms1"></div><div class="msg" id="sms2"></div><div class="msg" id="sms3"></div>
+        <p class="sub" style="margin:12px 0 0;font-size:.85rem">Preview only. You can opt out any time.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div><a class="logo" href="index.html" style="text-decoration:none">Plated</a><br>One plate, whole world.</div>
+  <div><strong>Visit</strong><br>Panchsheel Park Market,<br>near Hauz Khas, New Delhi<br>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</div>
+  <div><strong>Say hello</strong><br><a href="tel:+919812345678">+91 9812345678</a><br><a href="mailto:hello@platedindia.com">hello@platedindia.com</a><br><a href="https://www.instagram.com/platedpanchsheel">Instagram</a></div>
+  <div>© 2026 Plated. All rights reserved.</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+/* ============ PROGRAMME RULES: edit numbers here ============ */
+const RULES = {
+  tiers: [ {name:'Silver',min:0,rate:10,cls:''}, {name:'Gold',min:1000,rate:12,cls:'gold'}, {name:'Black',min:3000,rate:15,cls:'black'} ],
+  rupeesPerPoint: 10,          // 100 PP = Rs 100
+  referralBonus: 100,
+  milestones: [ {visit:5, reward:'free dessert'}, {visit:10, reward:'free signature plate'} ],
+  mysteryFrom: 1,              // index in tiers[]: 1 = Gold and above
+  mystery: [                   // replace with the chef's real monthly specials
+    {name:'Black garlic ramen with a soft egg', note:'Rich, smoky and only made for members.'},
+    {name:'Truffle butter gnocchi', note:'Pan-seared, finished with aged parmesan.'},
+    {name:'Smoked paneer birria tacos', note:'Slow-braised, served with consommé.'},
+    {name:'Miso caramel dessert plate', note:'A sweet finish the menu never shows.'}
+  ],
+  dishes: ['Chicken fettuccine alfredo','Signature plate 2','Signature plate 3','Signature plate 4'], // replace with your menu items
+  prizes: [ {label:'5% off',pct:5,w:25}, {label:'10% off',pct:10,w:20},
+            {label:'Free dessert',pct:0,w:15,note:'A free dessert every month, for life.'},
+            {label:'15% off',pct:15,w:10}, {label:'20% off',pct:20,w:5}, {label:'10% off',pct:10,w:25} ]
+};
+/* ============================================================= */
+/* NOTE: data lives in this browser only (localStorage). For real members across devices,
+   replace load()/save() with calls to a backend such as Firebase, Supabase or Google Sheets. */
+const KEY='plated-circle-v1';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let S=load();   // {member, prize, visits:[], redeemed, bonus}
+
+/* ---------- wheel ---------- */
+const cv=$('wheel'),cx=cv.getContext('2d'),N=RULES.prizes.length,ARC=2*Math.PI/N;
+const cols=['#adbaa7','#eaede4','#d7dfd2','#f5f6ef','#adbaa7','#eaede4'],txt=['#26302a'];
+function drawWheel(){
+  const R=cv.width/2;
+  RULES.prizes.forEach((p,i)=>{
+    cx.beginPath();cx.moveTo(R,R);cx.arc(R,R,R,i*ARC-Math.PI/2,(i+1)*ARC-Math.PI/2);cx.fillStyle=cols[i%cols.length];cx.fill();
+    cx.save();cx.translate(R,R);cx.rotate(i*ARC+ARC/2-Math.PI/2);cx.textAlign='right';cx.fillStyle=txt[0];
+    cx.font='700 44px Georgia, Times New Roman, serif';cx.fillText(p.label,R-34,13);cx.restore();
+  });
+}
+let rot=0;
+function pickPrize(){const t=RULES.prizes.reduce((a,p)=>a+p.w,0);let r=Math.random()*t;for(let i=0;i<N;i++){r-=RULES.prizes[i].w;if(r<=0)return i}return 0}
+function spin(){
+  if(!S||S.prize)return;
+  const i=pickPrize();
+  const target=360*6+(360-(i*(360/N)+(360/N)/2));
+  rot=target;cv.style.transform='rotate('+rot+'deg)';
+  $('spinBtn').disabled=true;
+  const wait=matchMedia('(prefers-reduced-motion:reduce)').matches?0:4600;
+  setTimeout(()=>{S.prize=RULES.prizes[i];save();render();$('spinResult').textContent=S.prize.note?'You unlocked: '+S.prize.note:'You unlocked '+S.prize.label+' for life.'},wait);
+}
+
+/* ---------- helpers ---------- */
+const lifetime=()=>S.visits.reduce((a,v)=>a+v.earned,0)+S.bonus;
+const balance=()=>lifetime()-S.redeemed;
+const tierOf=pts=>[...RULES.tiers].reverse().find(t=>pts>=t.min);
+const nextTier=pts=>RULES.tiers.find(t=>t.min>pts);
+const fmt=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const mode=a=>{const m={};a.forEach(x=>m[x]=(m[x]||0)+1);return Object.keys(m).sort((x,y)=>m[y]-m[x])[0]||'-'};
+
+/* ---------- join ---------- */
+$('joinBtn').onclick=()=>{
+  const name=$('jName').value.trim(),phone=$('jPhone').value.trim(),err=$('joinErr');
+  if(!name||!/^[6-9]\d{9}$/.test(phone)){err.style.display='block';err.textContent='Enter your name and a valid 10-digit mobile number.';return}
+  const ref=$('jRef').value.trim().toUpperCase();
+  S={member:{name,phone,dob:$('jDob').value,ann:$('jAnn').value,sms:$('jSms').checked,
+    id:'PC'+phone.slice(-4)+Math.floor(Math.random()*90+10),code:'PLT-'+Math.random().toString(36).slice(2,6).toUpperCase()},
+    prize:null,visits:[],redeemed:0,bonus:/^PLT-[A-Z0-9]{4}$/.test(ref)?RULES.referralBonus:0};
+  save();render();location.hash='#join';
+};
+
+/* ---------- bill ---------- */
+function calcBill(){
+  if(!S)return null;
+  const amt=Math.max(0,+$('bAmt').value||0),disc=S.prize?amt*S.prize.pct/100:0;
+  let after=amt-disc,cash=0;
+  if($('bRedeem').checked){cash=Math.min(balance()*RULES.rupeesPerPoint/10,after)}
+  const pay=after-cash,rate=tierOf(lifetime()).rate,earned=Math.floor(pay/100*rate);
+  return {amt,disc,cash,pay,earned};
+}
+function renderBill(){
+  const b=calcBill();if(!b)return;
+  $('billBox').innerHTML=`<div><span>Bill</span><span>${fmt(b.amt)}</span></div>
+  <div><span>Lifetime discount${S.prize&&S.prize.pct?' ('+S.prize.label+')':''}</span><span>-${fmt(b.disc)}</span></div>
+  <div><span>Points cashback</span><span>-${fmt(b.cash)}</span></div>
+  <div class="total"><span>You pay</span><span>${fmt(b.pay)}</span></div>
+  <div><span>Points you earn</span><span>+${b.earned} PP</span></div>`;
+}
+['bAmt','bChan','bRedeem'].forEach(id=>$(id).addEventListener('input',renderBill));
+$('billBtn').onclick=()=>{
+  const b=calcBill();if(!b||!b.amt)return;
+  S.visits.push({date:new Date().toISOString(),amt:b.pay,channel:$('bChan').value,dish:$('bDish').value,earned:b.earned});
+  S.redeemed+=Math.round(b.cash*10/RULES.rupeesPerPoint);
+  save();render();
+};
+
+/* ---------- referral ---------- */
+const shared=()=>{S.shared=(S.shared||0)+1;save();renderLoop()};
+$('waRef').addEventListener('click',shared);
+$('copyRef').onclick=async()=>{shared();try{await navigator.clipboard.writeText(S.member.code);$('copyRef').textContent='Copied'}catch(e){$('copyRef').textContent=S.member.code}};
+
+/* ---------- render ---------- */
+function render(){
+  const joined=!!S;
+  renderLoop();renderPlate();renderMystery();
+  $('earn').classList.toggle('locked',!joined);$('insights').classList.toggle('locked',!joined);
+  $('joinPanel').style.display=joined?'none':'block';
+  if(!joined){$('spinBtn').textContent='Join first to spin';return}
+  const pts=lifetime(),t=tierOf(pts),n=nextTier(pts),m=S.member;
+  $('memberCard').className='card '+t.cls;
+  $('cTier').textContent=t.name;$('cPts').textContent=balance().toLocaleString('en-IN');
+  $('cBar').style.width=(n?Math.min(100,(pts-t.min)/(n.min-t.min)*100):100)+'%';
+  $('cNext').textContent=n?(n.min-pts)+' PP to '+n.name:'Top tier reached';
+  $('cMeta').textContent=m.name+' · ID '+m.id;
+  // wheel
+  const done=!!S.prize;
+  $('spinBtn').disabled=done;$('spinBtn').textContent=done?'Spin used':'Spin the wheel';
+  $('lifeBenefit').textContent=done?(S.prize.note||S.prize.label+' on every bill, for life.'):'Spin the wheel to reveal it.';
+  // dishes
+  if(!$('bDish').options.length)RULES.dishes.forEach(d=>$('bDish').add(new Option(d,d)));
+  renderBill();
+  // milestones
+  const v=S.visits.length,nm=RULES.milestones.find(x=>x.visit>v);
+  $('mText').textContent=nm?`${v} visits so far. ${nm.visit-v} more for a ${nm.reward}.`:`${v} visits so far. All milestones unlocked.`;
+  $('mBar').style.width=(nm?v/nm.visit*100:100)+'%';$('mBar').style.background='var(--saffron)';
+  const hit=RULES.milestones.filter(x=>x.visit<=v).map(x=>x.reward);
+  $('mReward').textContent=hit.length?'Unlocked: '+hit.join(', ')+'.':'Visit 5: free dessert. Visit 10: free signature plate.';
+  // referral
+  $('refCode').textContent=m.code;$('copyRef').disabled=false;
+  const wa=$('waRef');wa.style.display='inline-block';
+  wa.href='https://wa.me/?text='+encodeURIComponent('Join Plated Circle with my code '+m.code+' and we both get 100 bonus points: '+location.href.split('#')[0]);
+  // analytics
+  $('aVisits').textContent=v;$('aAvg').textContent=v?fmt(S.visits.reduce((a,x)=>a+x.amt,0)/v):'₹0';
+  $('aChan').textContent=mode(S.visits.map(x=>x.channel));$('aDish').textContent=mode(S.visits.map(x=>x.dish));
+  // SMS previews (only if opted in)
+  const fav=mode(S.visits.map(x=>x.dish)),first=m.name.split(' ')[0];
+  const lines=m.sms?[
+    `Happy birthday ${esc(first)}! A dessert is on us this week at Plated.`,
+    `We miss you, ${esc(first)}. Come back in the next 7 days for 50 bonus points.`,
+    fav!=='-'?`New this season, picked for a ${esc(fav)} fan. Early access for Circle members.`:`New seasonal plates are open to Circle members first.`
+  ]:['You have opted out of SMS offers.','',''];
+  ['sms1','sms2','sms3'].forEach((id,i)=>{$(id).innerHTML=lines[i];$(id).style.display=lines[i]?'block':'none'});
+}
+
+/* ---------- the loop flowchart ---------- */
+const LOOP=[
+ {t:'Join',go:'join',val:()=>S?'Member':'QR or spin',done:()=>!!S},
+ {t:'Earn',go:'earn',val:()=>S?S.visits.length+' visits':'10 PP per ₹100',done:()=>!!S&&S.visits.length>0},
+ {t:'Tier up',go:'tiers',val:()=>S?tierOf(lifetime()).name:'Silver to Black',done:()=>!!S&&lifetime()>=1000},
+ {t:'Redeem',go:'earn',val:()=>S&&S.redeemed?fmt(S.redeemed*RULES.rupeesPerPoint/10)+' saved':'100 PP = ₹100',done:()=>!!S&&S.redeemed>0},
+ {t:'Refer',go:'share',val:()=>S&&S.shared?S.shared+' shared':'+100 PP each',done:()=>!!S&&!!S.shared},
+ {t:'Personalise',go:'insights',val:()=>S&&S.visits.length?'Offers for you':'Learns your taste',done:()=>!!S&&S.visits.length>=2}
+];
+const CX=280,CY=240,R=140,NR=30,still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const pt=(deg,r=R)=>[CX+r*Math.cos(deg*Math.PI/180),CY+r*Math.sin(deg*Math.PI/180)];
+function renderLoop(){
+  const el=$('loopSvg');if(!el)return;
+  const done=LOOP.map(n=>n.done()),cur=S?(done.indexOf(false)<0?-1:done.indexOf(false)):0;
+  let g='';
+  // ring segments (gold once the stop before them is done)
+  LOOP.forEach((n,i)=>{
+    const a=-90+60*i,b=a+60,[x1,y1]=pt(a),[x2,y2]=pt(b);
+    g+=`<path d="M${x1},${y1} A${R},${R} 0 0 1 ${x2},${y2}" fill="none" stroke="${done[i]?'#a99a6c':'#cfd5c8'}" stroke-width="${done[i]?5:3}" ${done[i]?'':'stroke-dasharray="3 8" stroke-linecap="round"'}/>`;
+    const [mx,my]=pt(a+30);
+    g+=`<polygon points="0,-8 7,6 -7,6" transform="translate(${mx},${my}) rotate(${a+30+90})" fill="${done[i]?'#a99a6c':'#adbaa7'}"/>`;
+  });
+  // nodes + labels
+  LOOP.forEach((n,i)=>{
+    const a=-90+60*i,[x,y]=pt(a),[lx,ly]=pt(a,R+NR+14);
+    const side=Math.abs(Math.cos(a*Math.PI/180))<.2?'middle':(Math.cos(a*Math.PI/180)>0?'start':'end');
+    const ty=side==='middle'?(Math.sin(a*Math.PI/180)<0?ly-18:ly+10):ly-4;
+    const fill=done[i]?'#a99a6c':(i===cur?'#38453b':'#fbfbf7'),col=done[i]?'#26302a':(i===cur?'#f5f6ef':'#5b665d');
+    g+=`<g class="node" data-go="${n.go}" tabindex="0" role="link" aria-label="${n.t}: ${esc(n.val())}">
+      ${i===cur?`<circle class="pulse" cx="${x}" cy="${y}" r="${NR}" fill="#38453b"/>`:''}
+      <circle class="hit" cx="${x}" cy="${y}" r="${NR}" fill="${fill}" stroke="${i===cur?'#38453b':'#a99a6c'}" stroke-width="2"/>
+      <text x="${x}" y="${y+8}" text-anchor="middle" font-size="24" font-family="Georgia,serif" fill="${col}">${done[i]?'✓':i+1}</text>
+      <text x="${lx}" y="${ty}" text-anchor="${side}" font-size="18" font-weight="700" fill="#26302a">${n.t}</text>
+      <text x="${lx}" y="${ty+19}" text-anchor="${side}" font-size="14" fill="#5b665d">${esc(n.val())}</text></g>`;
+  });
+  // centre
+  const t=S?tierOf(lifetime()):null;
+  g+=`<text x="${CX}" y="${CY-6}" text-anchor="middle" font-family="Georgia,serif" font-size="30" fill="#26302a">${S?t.name:'Your Circle'}</text>
+      <text x="${CX}" y="${CY+22}" text-anchor="middle" font-size="15" fill="#5b665d">${S?balance().toLocaleString('en-IN')+' PP':'Tap a stop to begin'}</text>
+      <text x="${CX}" y="${CY+44}" text-anchor="middle" font-size="12" fill="#a99a6c">insights feed your next offer</text>`;
+  // orbiting dot
+  if(!still)g+=`<circle r="6" fill="#38453b"><animateMotion dur="14s" repeatCount="indefinite" path="M${CX},${CY-R} a${R},${R} 0 1,1 0,${2*R} a${R},${R} 0 1,1 0,${-2*R}"/></circle>`;
+  el.innerHTML=g;
+}
+$('loopSvg').addEventListener('click',e=>{const n=e.target.closest('.node');if(n)document.getElementById(n.dataset.go).scrollIntoView({behavior:still?'auto':'smooth'})});
+$('loopSvg').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const n=e.target.closest&&e.target.closest('.node');if(n){e.preventDefault();n.dispatchEvent(new Event('click',{bubbles:true}))}}});
+
+/* ---------- chef's mystery plate ---------- */
+const monthKey=()=>new Date().toISOString().slice(0,7);
+function renderMystery(){
+  const info=$('mInfo');if(!info)return;
+  const cl=$('mCloche'),dish=$('mDish'),lock=$('mLock');
+  const gate=RULES.tiers[RULES.mysteryFrom];
+  const ok=!!S&&lifetime()>=gate.min;
+  const got=!!S&&S.mystery&&S.mystery.month===monthKey();
+  cl.classList.toggle('lift',got);dish.classList.toggle('show',got);
+  lock.textContent=got?'':(ok?'Tap to lift':!S?'Sealed':gate.name+' only');
+  const d=new Date(),next=new Date(d.getFullYear(),d.getMonth()+1,1).toLocaleDateString('en-IN',{day:'numeric',month:'long'});
+  if(!S){info.innerHTML='<h3>Not opened yet</h3><p class="sub" style="margin:0">Join the Circle first. Your plate is waiting.</p>';return}
+  if(!ok){info.innerHTML=`<h3>Locked until ${gate.name}</h3><p class="sub" style="margin:0">You are ${(gate.min-lifetime()).toLocaleString('en-IN')} PP away from your first mystery plate. Keep earning and the cover lifts.</p>`;return}
+  if(!got){info.innerHTML=`<h3>This month's plate is ready</h3><p class="sub">Nobody else sees it until you do. Lift the cover to reveal it.</p><button class="btn" id="mBtn">Lift the cover</button>`;
+    $('mBtn').onclick=()=>{
+      const pool=RULES.mystery.filter(x=>!S.mystery||x.name!==S.mystery.dish.name),pick=(pool.length?pool:RULES.mystery)[Math.floor(Math.random()*(pool.length||RULES.mystery.length))];
+      S.mystery={month:monthKey(),dish:pick};save();renderMystery();renderLoop();
+    };return}
+  const x=S.mystery.dish;
+  info.innerHTML=`<h3>Your plate this month</h3><div class="dish">${esc(x.name)}</div><p class="sub" style="margin:0">${esc(x.note)}</p>
+    <div class="code">MP-${esc(S.member.id)}-${monthKey().replace('-','')}</div>
+    <p class="sub" style="margin:12px 0 0;font-size:.9rem">Show this code to your server. Your next plate opens on ${next}.</p>`;
+}
+
+/* ---------- plate ring: every visit fills a slice ---------- */
+function renderPlate(){
+  const v=S?S.visits.length:0,c=v>0&&v%10===0?10:v%10,cx0=100,cy0=100,ro=92,ri=42;
+  let g='';
+  for(let i=0;i<10;i++){
+    const a1=(-90+i*36+1.5)*Math.PI/180,a2=(-90+(i+1)*36-1.5)*Math.PI/180;
+    const P=(a,r)=>[cx0+r*Math.cos(a),cy0+r*Math.sin(a)].join(',');
+    g+=`<path d="M${P(a1,ri)} L${P(a1,ro)} A${ro},${ro} 0 0 1 ${P(a2,ro)} L${P(a2,ri)} A${ri},${ri} 0 0 0 ${P(a1,ri)}Z" fill="${i<c?'#a99a6c':'#eaede4'}" stroke="#cfd5c8"/>`;
+    if(i===4||i===9){const am=(-90+(i+.5)*36)*Math.PI/180;g+=`<text x="${cx0+67*Math.cos(am)}" y="${cy0+67*Math.sin(am)+6}" text-anchor="middle" font-size="18" fill="#26302a">${i===4?'🍰':'🍽'}</text>`}
+  }
+  g+=`<text x="100" y="108" text-anchor="middle" font-family="Georgia,serif" font-size="26" fill="#26302a">${c}/10</text>`;
+  $('plateRing').innerHTML=`<svg viewBox="0 0 200 200" role="img" aria-label="${c} of 10 visits on this plate">${g}</svg>`;
+}
+
+/* ---------- init ---------- */
+drawWheel();
+$('spinBtn').onclick=spin;
+try{const q=qrcode(0,'M');q.addData(location.origin+location.pathname);q.make();$('qr').innerHTML=q.createSvgTag({cellSize:5,margin:0})}catch(e){$('qr').textContent='QR code unavailable offline.'}
+if(S&&S.prize){rot=0}
+render();
+</script>
+<script src="script.js"></script>
+</body>
+</html>
