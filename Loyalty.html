@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join Plated Circle | Plated</title>
+<meta name="description" content="Earn points, cashback and rewards at Plated across dine-in, takeaway and online orders.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- QR code library (loads from a CDN, nothing to install) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+/* Plated palette and fonts, taken from the site's style.css */
+:root{
+  --ink:#23312a; --forest:#33463a; --sage:#a9bca4; --pastel:#d5e0cf; --mist:#e9efe4;
+  --ivory:#f6f7f1; --gold:#b19a68; --line:#cfd5c8; --muted:#5b665d; --white:#fff; --err:#8a3b2e;
+  --display:'Cormorant Garamond',Georgia,serif;
+  --body:'Jost',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{font:300 17px/1.8 var(--body);color:var(--ink);background:var(--ivory)}
+h1,h2,h3,.logo{font-family:var(--display);font-weight:500;letter-spacing:-.01em;line-height:1.05}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:4px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* header and footer, same pattern as the rest of the site */
+header{position:fixed;inset:0 0 auto;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:22px 5vw;background:rgba(246,247,241,.88);backdrop-filter:blur(16px);border-bottom:1px solid rgba(177,154,104,.35)}
+.logo{font-size:2rem;text-decoration:none;letter-spacing:.14em}
+nav{display:flex;gap:34px;align-items:center}
+nav a{text-decoration:none;font-size:.95rem;letter-spacing:.06em}
+nav a.on{border-bottom:1px solid var(--gold);padding-bottom:3px}
+#burger{display:none;background:none;border:0;font-size:1.6rem;cursor:pointer;color:var(--ink)}
+footer{background:var(--ink);color:var(--pastel);padding:80px 6vw 30px;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-top:100px}
+footer .logo{color:#fff;font-size:2.6rem}
+footer a{display:block;text-decoration:none;margin-bottom:6px}
+footer small{grid-column:1/-1;opacity:.6}
+
+/* page top */
+.page-top{padding:150px 5vw 70px;background:var(--pastel)}
+.page-top .inner{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
+.page-top h1{font-size:clamp(3rem,7vw,5.6rem);font-weight:400;margin-bottom:20px}
+.page-top p.lead{max-width:44ch;margin-bottom:28px}
+@media(max-width:860px){.page-top .inner{grid-template-columns:1fr}}
+
+main{max-width:1120px;margin:0 auto;padding:0 5vw}
+section{padding-top:90px}
+h2{font-size:clamp(2.2rem,4.5vw,3.4rem);font-weight:400;margin-bottom:22px}
+h3{font-size:1.5rem;margin-bottom:8px}
+p{margin-bottom:1em}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+
+/* buttons: forest fill, outline on hover, like the site */
+.btn{display:inline-block;background:var(--forest);color:var(--ivory)!important;padding:14px 34px;border:1px solid var(--forest);text-decoration:none;font:400 .95rem var(--body);letter-spacing:.1em;cursor:pointer;transition:background .3s,color .3s;margin:0 6px 8px 0}
+.btn:hover{background:transparent;color:var(--forest)!important}
+.btn.dark{background:var(--ink);border-color:var(--ink)}
+.btn.dark:hover{background:transparent;color:var(--ink)!important}
+.btn.ghost{background:transparent;color:var(--forest)!important}
+.btn.ghost:hover{background:var(--forest);color:var(--ivory)!important}
+.btn.sm{padding:6px 18px;font-size:.85rem}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn[disabled]:hover{background:var(--forest);color:var(--ivory)!important}
+
+/* member card */
+.pcard{position:relative;padding:28px;color:var(--ivory);background:var(--forest);min-height:240px;display:flex;flex-direction:column;justify-content:space-between;gap:18px;overflow:hidden;border:1px solid var(--gold);box-shadow:0 0 0 10px rgba(177,154,104,.2)}
+.pcard::after{content:"";position:absolute;right:-70px;top:-70px;width:190px;height:190px;border-radius:50%;border:2px solid var(--gold);opacity:.7}
+.pcard .brand{font-family:var(--display);font-size:1.7rem;letter-spacing:.06em}
+.pcard .tier{display:inline-block;margin-top:4px;padding:2px 14px;border:1px solid var(--gold);color:var(--gold);font-size:.85rem;letter-spacing:.1em}
+.pcard .row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;position:relative;z-index:1}
+.pcard .who{font-family:var(--display);font-size:1.9rem;line-height:1.1}
+.pcard .id{opacity:.8;letter-spacing:.12em;font-size:.9rem}
+.qrbox{background:#fff;padding:8px;line-height:0}
+.qrbox img,.qrbox canvas{width:92px!important;height:92px!important}
+
+/* layout blocks */
+.panel{background:var(--white);border:1px solid var(--line);padding:clamp(20px,3vw,32px)}
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:860px){.g3,.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:520px){.g3,.g4{grid-template-columns:1fr}}
+.perk{padding-top:22px;border-top:1px solid var(--gold)}
+
+/* forms: underline fields, same as the site's contact form */
+label{display:block;font-weight:500;font-size:.9rem;margin-bottom:2px}
+input,select,textarea{font:inherit;padding:12px 4px;border:0;border-bottom:1px solid var(--sage);background:transparent;width:100%;border-radius:0;color:var(--ink)}
+textarea{border:1px solid var(--sage);padding:10px}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);outline:0}
+.field{margin-bottom:14px}
+.check{display:flex;gap:10px;align-items:flex-start}
+.check input{width:auto;margin-top:8px}
+.msg{margin-top:12px;padding:12px 14px;font-size:.95rem;font-weight:400;display:none;background:var(--ivory);border-left:4px solid var(--gold)}
+.msg.ok,.msg.err{display:block}
+.msg.err{border-left-color:var(--err);color:var(--err)}
+
+/* stats and bars */
+.stat{padding:20px;background:var(--ivory);border:1px solid var(--line)}
+.stat b{display:block;font-family:var(--display);font-weight:500;font-size:2.4rem;line-height:1}
+.stat span{color:var(--muted);font-size:.9rem}
+.bar{height:8px;background:var(--line);overflow:hidden;margin-top:10px}
+.bar>i{display:block;height:100%;background:var(--gold);transition:width .5s}
+
+/* tiers, rewards, badges */
+.tier-card{border:1px solid var(--line);padding:22px;background:var(--white)}
+.tier-card.on{border-color:var(--gold);box-shadow:0 0 0 4px rgba(177,154,104,.2)}
+.tier-card ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+.reward{display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:1px solid var(--line);padding:22px;background:var(--white)}
+.reward .cost{font:500 1.8rem var(--display);color:var(--gold);margin-bottom:6px}
+.code{display:inline-block;border:1px dashed var(--gold);padding:2px 12px;letter-spacing:.12em;font-family:var(--display);font-size:1.15rem}
+.badges{display:flex;flex-wrap:wrap;gap:10px}
+.badge{padding:6px 16px;border:1px dashed var(--sage);color:var(--muted);font-size:.9rem}
+.badge.on{border:1px solid var(--gold);background:var(--mist);color:var(--ink)}
+
+/* tables and channel bars */
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:500;color:var(--muted)}
+.hbar{display:grid;grid-template-columns:90px 1fr 80px;gap:10px;align-items:center;margin:8px 0}
+.hbar .track{height:10px;background:var(--line);overflow:hidden}
+.hbar .fill{height:100%;background:var(--forest)}
+
+.hidden{display:none!important}
+
+@media(max-width:800px){
+  #burger{display:block}
+  nav{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;padding:28px;background:var(--ivory);gap:18px}
+  nav.open{display:flex}
+  footer{grid-template-columns:1fr}
+  section{padding-top:64px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="index.html">Plated</a>
+  <button id="burger" aria-expanded="false" aria-controls="nav" aria-label="Menu">☰</button>
+  <nav id="nav">
+    <a href="index.html">Home</a><a href="menu.html">Menu</a><a href="about.html">About</a><a class="on" href="circle.html" aria-current="page">Plated Circle</a><a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============ HERO ============ -->
+</main>
+<div class="page-top"><div class="inner">
+  <div>
+    <h1>Every plate counts</h1>
+    <p class="lead">Join Plated Circle to earn points and cashback on every visit, whether you dine in, take away or order online. Spend them on desserts, chef's specials and VIP tables.</p>
+    <p>
+      <a class="btn" href="#join">Join the Circle</a>
+      <a class="btn ghost" href="circle.html">Spin the wheel</a>
+    </p>
+  </div>
+  <div id="heroCard"></div>
+</div></div>
+<main>
+
+<!-- ============ HOW IT WORKS (points, cashback, tiers) ============ -->
+<section id="how">
+  <h2>How you earn</h2>
+  <div class="grid g3">
+    <div class="perk"><h3>Points</h3><p class="muted">Earn 1 point for every ₹10 you spend, on any order type.</p></div>
+    <div class="perk"><h3>Cashback</h3><p class="muted">Get 2% to 6% of your bill back as wallet credit, depending on your tier.</p></div>
+    <div class="perk"><h3>Referrals</h3><p class="muted">Bring a friend. They start with 100 bonus points, and so do you once they join.</p></div>
+  </div>
+  <div class="grid g3" style="margin-top:18px" id="tierCards"></div>
+</section>
+
+<!-- ============ JOIN / SIGN IN ============ -->
+<section id="join">
+  <div class="grid g2" id="joinArea">
+    <div class="panel" id="joinPanel">
+      <h2>Join Plated Circle</h2>
+      <form id="joinForm" novalidate>
+        <div class="field"><label for="jName">Full name</label><input id="jName" required autocomplete="name"></div>
+        <div class="field"><label for="jPhone">Mobile number</label><input id="jPhone" inputmode="numeric" maxlength="10" placeholder="10 digits" required autocomplete="tel-national"></div>
+        <div class="field"><label for="jEmail">Email (optional)</label><input id="jEmail" type="email" autocomplete="email"></div>
+        <div class="grid g2">
+          <div class="field"><label for="jFav">Favourite dish</label>
+            <select id="jFav">
+              <option value="">Pick one</option>
+              <option>Butter chicken</option><option>Mac and cheese</option><option>Burgers</option>
+              <option>Pasta</option><option>Ramen</option><option>Desserts</option><option>Vegetarian plates</option>
+            </select></div>
+          <div class="field"><label for="jDob">Birthday (optional)</label><input id="jDob" type="date"></div>
+        </div>
+        <div class="field"><label for="jRef">Referral code (optional)</label><input id="jRef" maxlength="6" placeholder="e.g. ANU482" style="text-transform:uppercase"></div>
+        <div class="field check"><input type="checkbox" id="jSms"><label for="jSms" style="font-weight:500;margin:0">Send me SMS offers and birthday treats. I can opt out at any time.</label></div>
+        <button class="btn dark" type="submit">Create my card</button>
+        <div id="joinMsg" class="msg" role="status"></div>
+      </form>
+    </div>
+    <div class="panel">
+      <h2>Already a member?</h2>
+      <p class="muted">Enter your mobile number to open your card on this device.</p>
+      <div class="field"><label for="sPhone">Mobile number</label><input id="sPhone" inputmode="numeric" maxlength="10"></div>
+      <button class="btn dark" id="signInBtn" type="button">Open my card</button>
+      <div id="signMsg" class="msg" role="status"></div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:28px 0">
+      <h3>Where you can earn</h3>
+      <p class="muted small">Dine in, takeaway and online orders all add to the same balance. Show your QR code at the counter or give your number when you order.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MEMBER AREA ============ -->
+<section id="memberArea" class="hidden">
+  <h2 id="greeting"></h2>
+  <p class="lead" id="personal"></p>
+
+  <div class="grid g4" style="margin:22px 0">
+    <div class="stat"><b id="stPoints">0</b><span>Points to spend</span></div>
+    <div class="stat"><b id="stWallet">₹0</b><span>Cashback wallet</span></div>
+    <div class="stat"><b id="stVisits">0</b><span>Visits</span></div>
+    <div class="stat"><b id="stRefs">0</b><span>Friends referred</span></div>
+  </div>
+
+  <div class="panel">
+    <h3 id="nextTierTxt"></h3>
+    <div class="bar" aria-hidden="true"><i id="tierBar" style="width:0"></i></div>
+  </div>
+
+  <h2 style="margin-top:64px">Redeem rewards</h2>
+  <div class="grid g3" id="rewardGrid"></div>
+  <div id="redeemMsg" class="msg" role="status"></div>
+  <div class="panel" style="margin-top:18px">
+    <h3>My vouchers</h3>
+    <div id="voucherList" class="muted">No vouchers yet.</div>
+  </div>
+
+  <h2 style="margin-top:64px">Badges</h2>
+  <div class="badges" id="badgeList"></div>
+
+  <h2 style="margin-top:64px">Refer and share</h2>
+  <div class="grid g2">
+    <div class="panel">
+      <h3>Your referral code</h3>
+      <p><span class="code" id="refCode"></span></p>
+      <p class="muted small">Friends enter this code when they join.</p>
+      <p>
+        <button class="btn" id="copyRef" type="button">Copy invite link</button>
+        <a class="btn ghost" id="waRef" target="_blank" rel="noopener">Share on WhatsApp</a>
+      </p>
+      <div id="refMsg" class="msg" role="status"></div>
+    </div>
+    <div class="panel">
+      <h3>Post and earn 25 points</h3>
+      <p class="muted small">Post a photo of your plate and tag @platedpanchsheel on Instagram, then claim your bonus. This one is on the honour system.</p>
+      <p>
+        <a class="btn ghost" href="https://www.instagram.com/platedpanchsheel" target="_blank" rel="noopener">Open Instagram</a>
+        <button class="btn" id="claimSocial" type="button">Claim 25 points</button>
+      </p>
+      <div id="socialMsg" class="msg" role="status"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px">
+    <h3>Earnings by order type</h3>
+    <div id="memberChannels"></div>
+  </div>
+
+  <p style="margin-top:24px"><button class="btn ghost" id="signOut" type="button">Sign out on this device</button></p>
+</section>
+
+<!-- ============ STAFF + ANALYTICS ============ -->
+<section id="staff">
+  <h2>Staff area</h2>
+  <div class="panel" id="staffLock">
+    <p class="muted">Staff only. Enter the PIN to record visits and see analytics.</p>
+    <div class="field" style="max-width:260px"><label for="pin">Staff PIN</label><input id="pin" type="password" inputmode="numeric" autocomplete="off"></div>
+    <button class="btn dark" id="unlock" type="button">Unlock</button>
+    <div id="pinMsg" class="msg" role="status"></div>
+  </div>
+
+  <div id="staffBody" class="hidden">
+    <div class="panel">
+      <h3>Record a visit</h3>
+      <div class="grid g2">
+        <div class="field"><label for="vFind">Scan or type member ID</label><input id="vFind" placeholder="PL12345"></div>
+        <div class="field"><label for="vMember">Member</label><select id="vMember"></select></div>
+        <div class="field"><label for="vChannel">Order type</label>
+          <select id="vChannel"><option>Dine in</option><option>Takeaway</option><option>Online</option></select></div>
+        <div class="field"><label for="vBill">Bill amount (₹)</label><input id="vBill" type="number" min="1" inputmode="numeric"></div>
+        <div class="field"><label for="vWallet">Wallet cashback used (₹)</label><input id="vWallet" type="number" min="0" value="0" inputmode="numeric"></div>
+      </div>
+      <button class="btn dark" id="addVisit" type="button">Add visit</button>
+      <div id="visitMsg" class="msg" role="status"></div>
+    </div>
+
+    <h2 style="margin-top:40px">Analytics</h2>
+    <div class="grid g4" id="anTiles"></div>
+    <div class="grid g2" style="margin-top:18px">
+      <div class="panel"><h3>Orders by channel</h3><div id="anChannels"></div></div>
+      <div class="panel"><h3>Most redeemed rewards</h3><div id="anRewards"></div></div>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3>Members</h3>
+      <div class="tablewrap"><table id="memberTable"></table></div>
+      <p style="margin-top:14px"><button class="btn ghost" id="exportCsv" type="button">Download members as CSV</button></p>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h3>SMS campaign</h3>
+      <p class="muted small">Only members who opted in are listed. Each button opens a text message on this phone. For automatic bulk sending, connect a provider such as MSG91 or Twilio (see the setup notes).</p>
+      <div class="field"><label for="smsText">Message</label>
+        <textarea id="smsText" rows="3">Plated: your Chef's Special is waiting. Show this message for a free dessert this week.</textarea></div>
+      <div id="smsList"></div>
+    </div>
+
+    <p class="small muted" style="margin-top:14px">Data on this page is stored in this browser only. Clear it with the button below while testing.</p>
+    <button class="btn ghost" id="resetAll" type="button">Delete all test data</button>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div><a class="logo" href="index.html">Plated</a>One plate, whole world.</div>
+  <div><strong>Visit</strong><br>Panchsheel Park Market,<br>near Hauz Khas, New Delhi<br>Tue–Sun, 12:30 PM – 11:00 PM<br>Closed Mondays</div>
+  <div><strong>Say hello</strong><br><a href="tel:+919812345678">+91 9812345678</a><a href="mailto:hello@platedindia.com">hello@platedindia.com</a><a href="https://www.instagram.com/platedpanchsheel">Instagram</a></div>
+  <small>© 2026 Plated. All rights reserved.</small>
+</footer>
+
+<script>
+/* =====================================================================
+   SETTINGS: change these to suit the restaurant
+   ===================================================================== */
+const CONFIG = {
+  STAFF_PIN: "2026",            // demo only; anyone can read this in the page source
+  POINTS_PER_RUPEES: 10,        // 1 point per ₹10
+  WELCOME_POINTS: 50,
+  REFERRAL_POINTS: 100,
+  SOCIAL_POINTS: 25,
+  TIERS: [
+    { name: "Silver",   min: 0,    cashback: 0.02, perks: ["2% cashback", "Birthday dessert", "Early access to seasonal plates"] },
+    { name: "Gold",     min: 500,  cashback: 0.04, perks: ["4% cashback", "Priority booking", "VIP table rewards unlocked"] },
+    { name: "Platinum", min: 1500, cashback: 0.06, perks: ["6% cashback", "Chef's table invitations", "Free dessert every visit"] }
+  ],
+  REWARDS: [
+    { id: "dessert",  name: "Free dessert",        cost: 150, tier: "Silver",   note: "Any dessert on the menu" },
+    { id: "disc10",   name: "10% off your bill",   cost: 200, tier: "Silver",   note: "One bill, any order type" },
+    { id: "special",  name: "Chef's special",      cost: 350, tier: "Silver",   note: "The dish the chef is proud of this week" },
+    { id: "vip",      name: "VIP table",           cost: 500, tier: "Gold",     note: "Best table, reserved for your evening" },
+    { id: "meal",     name: "Free meal",           cost: 900, tier: "Gold",     note: "One main and one drink on us" },
+    { id: "chefs",    name: "Chef's table night",  cost: 1500, tier: "Platinum", note: "A tasting menu for two" }
+  ],
+  /* Optional: paste a Formspree / Google Apps Script URL here to also
+     send every new sign-up to your own inbox or Google Sheet. */
+  SIGNUP_ENDPOINT: ""
+};
+
+/* =====================================================================
+   STORAGE (browser only; see setup notes for a real database)
+   ===================================================================== */
+const KEY = "plated_loyalty_v1";
+function load(){
+  try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch(e){}
+  return { members: [], visits: [], redemptions: [], currentId: null };
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(db)); } catch(e){} }
+let db = load();
+let staffOpen = false;
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rupee = n => "₹" + Math.round(n).toLocaleString("en-IN");
+const me = () => db.members.find(m => m.id === db.currentId) || null;
+const tierOf = pts => [...CONFIG.TIERS].reverse().find(t => pts >= t.min) || CONFIG.TIERS[0];
+const tierRank = name => CONFIG.TIERS.findIndex(t => t.name === name);
+function show(el, text, ok){ el.textContent = text; el.className = "msg " + (ok ? "ok" : "err"); }
+function newId(){ let id; do { id = "PL" + Math.floor(10000 + Math.random()*90000); } while (db.members.some(m => m.id === id)); return id; }
+function newRef(name){
+  const base = (name.replace(/[^a-z]/gi,"").toUpperCase() + "XXX").slice(0,3);
+  let code; do { code = base + Math.floor(100 + Math.random()*900); } while (db.members.some(m => m.refCode === code));
+  return code;
+}
+function memberVisits(m){ return db.visits.filter(v => v.memberId === m.id); }
+function referralsOf(m){ return db.members.filter(x => x.referredBy === m.refCode).length; }
+
+/* =====================================================================
+   JOIN / SIGN IN
+   ===================================================================== */
+$("joinForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("jName").value.trim();
+  const phone = $("jPhone").value.trim();
+  const ref = $("jRef").value.trim().toUpperCase();
+  const msg = $("joinMsg");
+  if (name.length < 2) return show(msg, "Enter your full name.", false);
+  if (!/^[6-9]\d{9}$/.test(phone)) return show(msg, "Enter a valid 10-digit Indian mobile number.", false);
+  if (db.members.some(m => m.phone === phone)) return show(msg, "This number is already a member. Use 'Open my card' instead.", false);
+  if (ref && !/^[A-Z]{3}\d{3}$/.test(ref)) return show(msg, "Referral codes look like ANU482. Check the code or leave it empty.", false);
+
+  const m = {
+    id: newId(), name, phone, email: $("jEmail").value.trim(), sms: $("jSms").checked,
+    fav: $("jFav").value, dob: $("jDob").value, refCode: newRef(name), referredBy: ref || "",
+    points: CONFIG.WELCOME_POINTS + (ref ? CONFIG.REFERRAL_POINTS : 0),
+    lifetime: CONFIG.WELCOME_POINTS + (ref ? CONFIG.REFERRAL_POINTS : 0),
+    wallet: 0, joined: new Date().toISOString(), socialClaimed: false, vouchers: []
+  };
+  // credit the friend who referred them, if that member exists in this browser's data
+  const referrer = ref && db.members.find(x => x.refCode === ref);
+  if (referrer){ referrer.points += CONFIG.REFERRAL_POINTS; referrer.lifetime += CONFIG.REFERRAL_POINTS; }
+
+  db.members.push(m); db.currentId = m.id; save();
+  if (CONFIG.SIGNUP_ENDPOINT){
+    try { fetch(CONFIG.SIGNUP_ENDPOINT, { method:"POST", headers:{ "Content-Type":"application/json", "Accept":"application/json" },
+      body: JSON.stringify({ id:m.id, name:m.name, phone:m.phone, email:m.email, smsOptIn:m.sms, fav:m.fav, dob:m.dob, referredBy:m.referredBy }) }); } catch(err){}
+  }
+  $("joinForm").reset();
+  show(msg, "Welcome, " + name.split(" ")[0] + "! Your card is ready below.", true);
+  render();
+  $("memberArea").scrollIntoView();
+});
+
+$("signInBtn").addEventListener("click", () => {
+  const phone = $("sPhone").value.trim();
+  const m = db.members.find(x => x.phone === phone);
+  if (!m) return show($("signMsg"), "No card for this number on this device. Join using the form instead.", false);
+  db.currentId = m.id; save(); render(); $("memberArea").scrollIntoView();
+});
+$("signOut").addEventListener("click", () => { db.currentId = null; save(); render(); window.scrollTo({top:0}); });
+
+/* =====================================================================
+   CARD (with QR code)
+   ===================================================================== */
+function cardHTML(m){
+  const t = tierOf(m.lifetime);
+  return `<div class="pcard">
+    <div class="row" style="align-items:flex-start"><div><div class="brand">Plated Circle</div><span class="tier">${esc(t.name)}</span></div></div>
+    <div class="row">
+      <div><div class="who">${esc(m.name)}</div><div class="id">${esc(m.id)}</div></div>
+      <div class="qrbox" id="qrTarget" aria-label="Your member QR code"></div>
+    </div>
+  </div>`;
+}
+function sampleCardHTML(){
+  return `<div class="pcard">
+    <div class="row" style="align-items:flex-start"><div><div class="brand">Plated Circle</div><span class="tier">Your tier shows here</span></div></div>
+    <div class="row"><div><div class="who">Your name</div><div class="id">PL00000</div></div><div class="qrbox" id="qrTarget"></div></div>
+  </div>`;
+}
+function drawQR(text){
+  const box = $("qrTarget"); if (!box || typeof QRCode === "undefined") return;
+  box.innerHTML = "";
+  new QRCode(box, { text, width: 92, height: 92, colorDark: "#23312a", colorLight: "#ffffff" });
+}
+
+/* =====================================================================
+   RENDER MEMBER AREA
+   ===================================================================== */
+function personalLine(m){
+  const t = tierOf(m.lifetime), parts = [];
+  if (m.fav) parts.push("Because you love " + m.fav.toLowerCase() + ", watch for it in our weekly specials.");
+  if (m.dob){
+    const d = new Date(m.dob), now = new Date();
+    if (d.getMonth() === now.getMonth()) parts.push("It's your birthday month. Ask for your free birthday dessert.");
+  }
+  if (t.name === "Silver") parts.push("Reach Gold at 500 lifetime points to unlock VIP tables.");
+  if (!parts.length) parts.push("Thanks for being part of the Circle.");
+  return parts.join(" ");
+}
+
+function renderMember(){
+  const m = me();
+  $("memberArea").classList.toggle("hidden", !m);
+  $("joinArea").classList.toggle("hidden", !!m);
+  $("heroCard").innerHTML = m ? cardHTML(m) : sampleCardHTML();
+  drawQR(m ? "PLATED-" + m.id : "https://veronakh.github.io/plated-india8/loyalty.html");
+  if (!m) return;
+
+  const vis = memberVisits(m), t = tierOf(m.lifetime);
+  $("greeting").textContent = "Hello, " + m.name.split(" ")[0];
+  $("personal").textContent = personalLine(m);
+  $("stPoints").textContent = m.points.toLocaleString("en-IN");
+  $("stWallet").textContent = rupee(m.wallet);
+  $("stVisits").textContent = vis.length;
+  $("stRefs").textContent = referralsOf(m);
+
+  const idx = tierRank(t.name), next = CONFIG.TIERS[idx + 1];
+  if (next){
+    const span = next.min - t.min, done = m.lifetime - t.min;
+    $("nextTierTxt").textContent = (next.min - m.lifetime) + " more points to reach " + next.name;
+    $("tierBar").style.width = Math.min(100, Math.round(done / span * 100)) + "%";
+  } else {
+    $("nextTierTxt").textContent = "You are at our highest tier, " + t.name + ".";
+    $("tierBar").style.width = "100%";
+  }
+
+  // rewards
+  $("rewardGrid").innerHTML = CONFIG.REWARDS.map(r => {
+    const locked = tierRank(r.tier) > idx, short = m.points < r.cost;
+    const label = locked ? "Reach " + r.tier : short ? (r.cost - m.points) + " points to go" : "Redeem";
+    return `<div class="reward"><div><h3>${esc(r.name)}</h3><p class="muted small">${esc(r.note)}</p></div>
+      <div><div class="cost">${r.cost} pts</div>
+      <button class="btn" data-redeem="${r.id}" ${locked || short ? "disabled" : ""}>${esc(label)}</button></div></div>`;
+  }).join("");
+
+  // vouchers
+  const vs = m.vouchers || [];
+  $("voucherList").innerHTML = vs.length
+    ? vs.slice().reverse().map(v => `<p style="margin:6px 0"><span class="code">${esc(v.code)}</span> ${esc(v.name)} <span class="small muted">(${new Date(v.date).toLocaleDateString("en-IN")})</span></p>`).join("")
+    : "No vouchers yet.";
+
+  // badges
+  const chans = new Set(vis.map(v => v.channel));
+  const badges = [
+    ["First visit", vis.length >= 1],
+    ["Three order types", chans.has("Dine in") && chans.has("Takeaway") && chans.has("Online")],
+    ["Regular (5 visits)", vis.length >= 5],
+    ["Referrer", referralsOf(m) >= 1],
+    ["Social butterfly", m.socialClaimed],
+    ["Gold member", tierRank(t.name) >= 1]
+  ];
+  $("badgeList").innerHTML = badges.map(b => `<span class="badge ${b[1] ? "on" : ""}">${esc(b[0])}</span>`).join("");
+
+  // referral
+  const link = location.origin + location.pathname + "?ref=" + m.refCode;
+  $("refCode").textContent = m.refCode;
+  $("waRef").href = "https://wa.me/?text=" + encodeURIComponent("Join me at Plated and we both get 100 bonus points. Use my code " + m.refCode + ": " + link);
+  $("copyRef").onclick = async () => {
+    try { await navigator.clipboard.writeText(link); show($("refMsg"), "Invite link copied.", true); }
+    catch(e){ show($("refMsg"), "Copy failed. Your link is: " + link, false); }
+  };
+  $("claimSocial").disabled = m.socialClaimed;
+
+  // channels
+  renderChannels($("memberChannels"), vis);
+}
+
+function renderChannels(el, visits){
+  const chans = ["Dine in", "Takeaway", "Online"];
+  const total = visits.reduce((s, v) => s + v.bill, 0);
+  if (!visits.length){ el.innerHTML = '<p class="muted">No orders yet. Your first visit will show here.</p>'; return; }
+  el.innerHTML = chans.map(c => {
+    const sum = visits.filter(v => v.channel === c).reduce((s, v) => s + v.bill, 0);
+    const pct = total ? Math.round(sum / total * 100) : 0;
+    return `<div class="hbar"><span>${c}</span><div class="track"><div class="fill" style="width:${pct}%"></div></div><span>${rupee(sum)}</span></div>`;
+  }).join("");
+}
+
+/* redeem */
+$("rewardGrid").addEventListener("click", e => {
+  const id = e.target.dataset && e.target.dataset.redeem; if (!id) return;
+  const m = me(), r = CONFIG.REWARDS.find(x => x.id === id); if (!m || !r) return;
+  if (m.points < r.cost) return show($("redeemMsg"), "Not enough points yet.", false);
+  const code = "PLT-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+  m.points -= r.cost;
+  (m.vouchers = m.vouchers || []).push({ code, name: r.name, date: new Date().toISOString() });
+  db.redemptions.push({ memberId: m.id, rewardId: r.id, cost: r.cost, code, date: new Date().toISOString() });
+  save(); render();
+  show($("redeemMsg"), r.name + " is yours. Show code " + code + " to the server.", true);
+});
+
+/* social */
+$("claimSocial").addEventListener("click", () => {
+  const m = me(); if (!m || m.socialClaimed) return;
+  m.socialClaimed = true; m.points += CONFIG.SOCIAL_POINTS; m.lifetime += CONFIG.SOCIAL_POINTS;
+  save(); render(); show($("socialMsg"), CONFIG.SOCIAL_POINTS + " points added. Thanks for sharing.", true);
+});
+
+/* =====================================================================
+   STAFF
+   ===================================================================== */
+$("unlock").addEventListener("click", () => {
+  if ($("pin").value === CONFIG.STAFF_PIN){ staffOpen = true; $("pin").value = ""; renderStaff(); }
+  else show($("pinMsg"), "Wrong PIN. Try again.", false);
+});
+
+function fillMemberSelect(){
+  const sel = $("vMember"), keep = sel.value;
+  sel.innerHTML = db.members.length
+    ? db.members.map(m => `<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.id)})</option>`).join("")
+    : '<option value="">No members yet</option>';
+  if (keep) sel.value = keep;
+}
+$("vFind").addEventListener("input", e => {
+  const v = e.target.value.trim().toUpperCase().replace(/^PLATED-/, "");
+  const m = db.members.find(x => x.id === v);
+  if (m) $("vMember").value = m.id;
+});
+
+$("addVisit").addEventListener("click", () => {
+  const m = db.members.find(x => x.id === $("vMember").value);
+  const bill = Number($("vBill").value), used = Number($("vWallet").value) || 0, ch = $("vChannel").value;
+  const msg = $("visitMsg");
+  if (!m) return show(msg, "Pick a member first.", false);
+  if (!(bill > 0)) return show(msg, "Enter the bill amount.", false);
+  if (used < 0 || used > m.wallet) return show(msg, "Wallet use must be between ₹0 and " + rupee(m.wallet) + ".", false);
+  if (used > bill) return show(msg, "Wallet use cannot be more than the bill.", false);
+
+  const payable = bill - used;
+  const pts = Math.floor(payable / CONFIG.POINTS_PER_RUPEES);
+  const cb = Math.round(payable * tierOf(m.lifetime).cashback);
+  m.wallet = m.wallet - used + cb; m.points += pts; m.lifetime += pts;
+  db.visits.push({ memberId: m.id, channel: ch, bill, used, pts, cb, date: new Date().toISOString() });
+  save(); render();
+  show(msg, `Added ${pts} points and ${rupee(cb)} cashback for ${m.name}.`, true);
+  $("vBill").value = ""; $("vWallet").value = 0;
+});
+
+function renderStaff(){
+  $("staffLock").classList.toggle("hidden", staffOpen);
+  $("staffBody").classList.toggle("hidden", !staffOpen);
+  if (!staffOpen) return;
+  fillMemberSelect();
+
+  // tiles
+  const revenue = db.visits.reduce((s, v) => s + v.bill, 0);
+  const optIn = db.members.filter(m => m.sms).length;
+  const repeat = db.members.filter(m => memberVisits(m).length >= 2).length;
+  const tiles = [
+    [db.members.length, "Members"], [db.visits.length, "Visits recorded"],
+    [rupee(revenue), "Sales through the programme"], [db.visits.length ? rupee(revenue / db.visits.length) : "₹0", "Average bill"],
+    [optIn, "SMS opt-ins"], [repeat, "Repeat customers"],
+    [db.redemptions.length, "Rewards redeemed"], [db.members.reduce((s, m) => s + m.points, 0).toLocaleString("en-IN"), "Points outstanding"]
+  ];
+  $("anTiles").innerHTML = tiles.map(t => `<div class="stat"><b>${esc(t[0])}</b><span>${esc(t[1])}</span></div>`).join("");
+  renderChannels($("anChannels"), db.visits);
+
+  const counts = {};
+  db.redemptions.forEach(r => counts[r.rewardId] = (counts[r.rewardId] || 0) + 1);
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = rows.length ? rows[0][1] : 1;
+  $("anRewards").innerHTML = rows.length
+    ? rows.map(([id, n]) => { const r = CONFIG.REWARDS.find(x => x.id === id); return `<div class="hbar"><span>${esc(r ? r.name : id)}</span><div class="track"><div class="fill" style="width:${n/max*100}%"></div></div><span>${n}</span></div>`; }).join("")
+    : '<p class="muted">No redemptions yet.</p>';
+
+  // table
+  $("memberTable").innerHTML = "<tr><th>ID</th><th>Name</th><th>Phone</th><th>Tier</th><th>Points</th><th>Wallet</th><th>Visits</th><th>SMS</th><th>Favourite</th></tr>" +
+    db.members.map(m => `<tr><td>${esc(m.id)}</td><td>${esc(m.name)}</td><td>${esc(m.phone)}</td><td>${esc(tierOf(m.lifetime).name)}</td><td>${m.points}</td><td>${rupee(m.wallet)}</td><td>${memberVisits(m).length}</td><td>${m.sms ? "Yes" : "No"}</td><td>${esc(m.fav || "-")}</td></tr>`).join("");
+
+  // sms list
+  const msgText = $("smsText").value;
+  const list = db.members.filter(m => m.sms);
+  $("smsList").innerHTML = list.length
+    ? list.map(m => `<p style="margin:6px 0">${esc(m.name)} (${esc(m.phone)}) <a class="btn ghost sm" href="sms:+91${esc(m.phone)}?body=${encodeURIComponent(msgText)}">Open SMS</a></p>`).join("")
+    : '<p class="muted">No members have opted in to SMS yet.</p>';
+}
+$("smsText").addEventListener("input", () => { if (staffOpen) renderStaff(); });
+
+$("exportCsv").addEventListener("click", () => {
+  const head = ["id","name","phone","email","sms_opt_in","tier","points","wallet","visits","favourite","birthday","referred_by","joined"];
+  const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const rows = db.members.map(m => [m.id,m.name,m.phone,m.email,m.sms?"yes":"no",tierOf(m.lifetime).name,m.points,m.wallet,memberVisits(m).length,m.fav,m.dob,m.referredBy,m.joined].map(q).join(","));
+  const blob = new Blob([head.join(",") + "\n" + rows.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "plated-members.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+$("resetAll").addEventListener("click", () => {
+  if (!confirm("Delete all members, visits and redemptions saved in this browser?")) return;
+  db = { members: [], visits: [], redemptions: [], currentId: null }; save(); render();
+});
+
+/* =====================================================================
+   TIER CARDS + MAIN RENDER
+   ===================================================================== */
+function renderTiers(){
+  const m = me(), cur = m ? tierOf(m.lifetime).name : "";
+  $("tierCards").innerHTML = CONFIG.TIERS.map(t =>
+    `<div class="tier-card ${t.name === cur ? "on" : ""}"><h3>${esc(t.name)}</h3><p class="muted small" style="margin:0">${t.min === 0 ? "Starting tier" : t.min + " lifetime points"}</p><ul>${t.perks.map(p => "<li>" + esc(p) + "</li>").join("")}</ul></div>`
+  ).join("");
+}
+function render(){ renderMember(); renderTiers(); renderStaff(); }
+
+// prefill referral code from invite link (?ref=ANU482)
+(function(){
+  const ref = new URLSearchParams(location.search).get("ref");
+  if (ref && /^[A-Za-z]{3}\d{3}$/.test(ref)) $("jRef").value = ref.toUpperCase();
+})();
+render();
+
+// mobile menu
+$("burger").addEventListener("click", () => {
+  const open = $("nav").classList.toggle("open");
+  $("burger").setAttribute("aria-expanded", open);
+});
+</script>
+</body>
+</html>
