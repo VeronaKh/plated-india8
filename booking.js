@@ -1,8 +1,8 @@
-/* ============ 1. YOUR EMAILJS SETTINGS (fill these in) ============ */
+/* ============ 1. EMAILJS SETTINGS ============ */
 const EMAILJS_PUBLIC_KEY   = "_LPCG_37bEpgOIVrc";
-const EMAILJS_SERVICE_ID   = "service_ns3x6fb";          // Gmail / Outlook service you connect in EmailJS
-const TEMPLATE_CUSTOMER_ID = "template_aphahyg"; // goes to the guest
-const TEMPLATE_OWNER_ID    = "template_2psxo1l";    // goes to you (ronika0705@gmail.com)
+const EMAILJS_SERVICE_ID   = "service_ns3x6fb";
+const TEMPLATE_CUSTOMER_ID = "template_aphahyg";  // goes to the guest
+const TEMPLATE_OWNER_ID    = "template_2psxo1l";  // goes to the owner (ronika0705@gmail.com)
 
 /* ============ 2. RESTAURANT RULES ============ */
 const OPEN_DAYS_CLOSED = [1];      // 0=Sun ... 1=Mon  -> Monday closed
@@ -111,9 +111,9 @@ const MAX_GUESTS = 10;             // bigger groups: ask them to call
     btn.disabled = true; say("Sending…", true);
 
     try {
-      // 1) Notify YOU (the owner) — always
+      // 1) Notify the owner — always
       await emailjs.send(EMAILJS_SERVICE_ID, TEMPLATE_OWNER_ID, params);
-      // 2) Confirmation to the GUEST — only for reservations
+      // 2) Confirmation to the guest — only for reservations
       if (isBooking) await emailjs.send(EMAILJS_SERVICE_ID, TEMPLATE_CUSTOMER_ID, params);
 
       say(isBooking
