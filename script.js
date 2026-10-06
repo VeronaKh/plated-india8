@@ -1,5 +1,5 @@
 // ===== SETTINGS (restaurant fills these in, see README) =====
-const CFG={restaurantEmail:'hello@platedindia.com',emailjsPublicKey:'',emailjsServiceId:'',emailjsTemplateId:''};
+const CFG={restaurantEmail:'ronikaihmpusa@gmail.com',emailjsPublicKey:'rn-HwVxuJilX5nVFL',emailjsServiceId:'service_qrm4vyl',emailjsTemplateId:'template_57b55il'};
 // =============================================================
 const dishes=[
 {c:'Mains',n:'Creamy Chicken Penne',d:'Garlic bread, basil, parmesan',p:695,i:'penne'},
