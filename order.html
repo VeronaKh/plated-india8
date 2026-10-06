@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order | Plated</title>
+<meta name="description" content="Dine in, takeaway or delivery. Order one complete plate from Plated, Panchsheel Park.">
+<!--
+  PLATED - OMNICHANNEL ORDER PAGE (works on GitHub Pages, no backend needed)
+
+  HOW IT WORKS
+  1. Guest picks a channel: Dine-in / Takeaway / Delivery
+  2. Adds plates to the cart (saved in the browser, so a refresh won't lose it)
+  3. Order goes to the restaurant on WhatsApp (pre-filled message) and is saved in "My orders"
+  4. QR codes: print a QR for  https://veronakh.github.io/plated-india8/order.html?mode=dinein&table=5
+     (change table=5 for each table) and the guest lands straight on Dine-in with the table filled in.
+     Takeaway counter QR:  order.html?mode=takeaway
+-->
+<style>
+  :root{
+    /* Match these to your site's colours / fonts */
+    --bg:#faf8f5; --ink:#1d1d1b; --muted:#6b6a66; --brand:#1f4d3a; --brand-ink:#fff;
+    --line:#e3dfd8; --card:#fff; --accent:#c8a45c; --danger:#b3261e;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#141413;--ink:#f1efe9;--muted:#a09e97;--brand:#6fb393;--brand-ink:#0d1a14;--line:#2d2d2a;--card:#1c1c1a;--accent:#d8b872;--danger:#f2b8b5}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);line-height:1.5}
+  a{color:inherit}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .top a{text-decoration:none;font-weight:700;letter-spacing:.02em}
+  main{max-width:960px;margin:0 auto;padding:20px;display:grid;gap:24px;grid-template-columns:1fr}
+  @media(min-width:860px){main{grid-template-columns:1.3fr 1fr;align-items:start}}
+  h1{font-size:1.7rem;margin:0 0 4px}
+  h2{font-size:1.1rem;margin:0 0 12px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+  .modes button{padding:12px 6px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+  .modes button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+  .modes small{display:block;font-weight:400;opacity:.8;font-size:.75rem}
+  button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  .item{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+  .item h3{margin:0;font-size:1rem}
+  .item p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+  .price{font-weight:700;white-space:nowrap}
+  .qty{display:flex;align-items:center;gap:8px}
+  .qty button{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--brand);background:transparent;color:var(--ink);font-size:1.1rem;cursor:pointer}
+  .qty .add{width:auto;border-radius:20px;padding:0 16px;background:var(--brand);color:var(--brand-ink);font:inherit;font-weight:600}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .sticky{position:sticky;top:12px}
+  label{display:block;font-size:.88rem;font-weight:600;margin:12px 0 4px}
+  input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+  .check{display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:.88rem}
+  .check input{width:auto;margin-top:4px}
+  .row{display:flex;justify-content:space-between;padding:3px 0}
+  .total{font-weight:700;font-size:1.1rem;border-top:1px solid var(--line);margin-top:8px;padding-top:10px}
+  .cta{width:100%;margin-top:16px;padding:14px;border:0;border-radius:10px;background:var(--brand);color:var(--brand-ink);font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+  .cta:disabled{opacity:.5;cursor:not-allowed}
+  .err{color:var(--danger);font-size:.88rem;min-height:1.2em;margin:8px 0 0}
+  .empty{color:var(--muted)}
+  .done{border:2px solid var(--brand);border-radius:14px;padding:18px;margin-bottom:16px}
+  .done .id{font-size:1.4rem;font-weight:800}
+  .badge{display:inline-block;padding:2px 10px;border-radius:20px;background:var(--accent);color:#1d1d1b;font-size:.8rem;font-weight:700}
+  .steps{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+  .steps span{font-size:.78rem;padding:3px 10px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
+  .steps span.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+  .hist{font-size:.9rem;border-bottom:1px solid var(--line);padding:10px 0}
+  .link{background:none;border:0;color:var(--brand);text-decoration:underline;cursor:pointer;font:inherit;padding:0}
+  [hidden]{display:none!important}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a href="index.html">Plated</a>
+  <nav><a href="menu.html">Menu</a> &nbsp; <a href="circle.html">Plated Circle</a></nav>
+</header>
+
+<main>
+  <!-- LEFT: channel + menu -->
+  <section>
+    <h1>Order a plate</h1>
+    <p class="sub">One complete dish per guest. Choose how you want it.</p>
+
+    <div class="modes" role="group" aria-label="Order type">
+      <button type="button" data-mode="dinein">Dine-in<small>Order from your table</small></button>
+      <button type="button" data-mode="takeaway">Takeaway<small>Pick up in 25 min</small></button>
+      <button type="button" data-mode="delivery">Delivery<small>To your door</small></button>
+    </div>
+
+    <h2>Menu</h2>
+    <div id="menu"></div>
+  </section>
+
+  <!-- RIGHT: cart + checkout -->
+  <aside class="sticky">
+    <div id="confirmation" hidden></div>
+
+    <div class="panel">
+      <h2>Your order</h2>
+      <div id="cart"></div>
+
+      <form id="form" novalidate>
+        <label for="name">Name</label>
+        <input id="name" autocomplete="name" required>
+
+        <label for="phone">Phone (10 digits)</label>
+        <input id="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" required>
+
+        <div id="f-dinein">
+          <label for="table">Table number</label>
+          <input id="table" type="number" min="1" max="60" inputmode="numeric">
+        </div>
+
+        <div id="f-takeaway" hidden>
+          <label for="pickup">Pickup time</label>
+          <select id="pickup"></select>
+        </div>
+
+        <div id="f-delivery" hidden>
+          <label for="address">Delivery address</label>
+          <textarea id="address" rows="3" placeholder="House no., street, landmark"></textarea>
+        </div>
+
+        <label for="notes">Notes for the kitchen (optional)</label>
+        <input id="notes" maxlength="120">
+
+        <label for="ref">Friend's Plated Circle code (optional)</label>
+        <input id="ref" maxlength="12" placeholder="e.g. PC-ANYA">
+
+        <label class="check"><input type="checkbox" id="sms" checked>
+          Send me order updates and member offers by SMS/WhatsApp</label>
+
+        <p class="err" id="err" role="alert"></p>
+        <button class="cta" id="place" type="submit">Place order on WhatsApp</button>
+      </form>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>My orders</h2>
+      <div id="history"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* =========================== EDIT THIS SECTION =========================== */
+const CONFIG = {
+  restaurant: "Plated",
+  ownerWhatsApp: "918800228176",   // country code + number, no + or spaces
+  gstRate: 0.05,                   // 5% GST
+  deliveryFee: 49,                 // rupees
+  freeDeliveryAbove: 699,          // free delivery on orders above this
+  minDelivery: 399,                // minimum cart value for delivery
+  pointsPerRupees: 10,             // 1 Plated point per Rs 10 spent
+  openHour: 12.5, closeHour: 23    // 12:30 PM to 11:00 PM
+};
+
+// Replace with your real menu. id must be unique.
+const MENU = [
+  { id:"alfredo",  name:"Chicken Fettuccine Alfredo", desc:"Creamy parmesan sauce, basil, grilled chicken", price:549 },
+  { id:"bibimbap", name:"Korean Bibimbap Bowl",       desc:"Gochujang, sesame, seasonal vegetables, egg",   price:499 },
+  { id:"burrito",  name:"Smoked Burrito Plate",       desc:"Slow-cooked filling, salsa verde, lime rice",   price:529 },
+  { id:"butter",   name:"Butter Chicken Plate",       desc:"Charred chicken, makhani gravy, jeera rice",    price:579 },
+  { id:"dessert",  name:"Burnt Basque Cheesecake",    desc:"Served warm, with berry compote",               price:299 }
+];
+/* ========================================================================= */
+
+const $ = id => document.getElementById(id);
+const rupee = n => "Rs " + Math.round(n).toLocaleString("en-IN");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- safe localStorage helpers ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+let state = {
+  mode: "dinein",
+  cart: store.get("plated_cart", {}),        // { itemId: qty }
+};
+
+/* ---------- channel handling (also reads QR code links) ---------- */
+function setMode(m){
+  state.mode = m;
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
+  ["dinein","takeaway","delivery"].forEach(x => $("f-"+x).hidden = x !== m);
+  $("place").textContent = m === "dinein" ? "Send order to the kitchen" : "Place order on WhatsApp";
+  renderCart();
+}
+(function initFromUrl(){
+  const p = new URLSearchParams(location.search);
+  const m = p.get("mode");
+  const mode = ["dinein","takeaway","delivery"].includes(m) ? m : "dinein";
+  if (p.get("table")) $("table").value = p.get("table");
+  if (p.get("ref")) $("ref").value = p.get("ref").toUpperCase();
+  const saved = store.get("plated_profile", {});
+  $("name").value = saved.name || ""; $("phone").value = saved.phone || "";
+  state.mode = mode;
+})();
+
+/* ---------- pickup slots every 15 min, starting 25 min from now ---------- */
+function buildPickupSlots(){
+  const sel = $("pickup"); sel.innerHTML = "";
+  const now = new Date(); now.setMinutes(now.getMinutes() + 25);
+  now.setMinutes(Math.ceil(now.getMinutes()/15)*15, 0, 0);
+  let count = 0, guard = 0;
+  for (let t = new Date(now); count < 12 && guard < 96; t = new Date(t.getTime() + 15*60000), guard++){
+    const h = t.getHours() + t.getMinutes()/60;
+    if (t.getDate() !== now.getDate() || h > CONFIG.closeHour) break;   // stop at closing / midnight
+    if (h < CONFIG.openHour) continue;                                  // skip until opening
+    const label = t.toLocaleTimeString("en-IN", {hour:"numeric", minute:"2-digit"});
+    sel.add(new Option(label, label)); count++;
+  }
+  if (!sel.options.length) sel.add(new Option("Closed now - opens 12:30 PM", ""));
+}
+
+/* ---------- menu ---------- */
+function renderMenu(){
+  $("menu").innerHTML = MENU.map(i => `
+    <div class="item">
+      <div><h3>${esc(i.name)}</h3><p>${esc(i.desc)}</p><span class="price">${rupee(i.price)}</span></div>
+      <div class="qty" data-id="${i.id}"></div>
+    </div>`).join("");
+  MENU.forEach(i => renderQty(i.id));
+}
+function renderQty(id){
+  const box = document.querySelector(`.qty[data-id="${id}"]`);
+  const q = state.cart[id] || 0;
+  box.innerHTML = q === 0
+    ? `<button class="add" type="button" data-act="inc" data-id="${id}">Add</button>`
+    : `<button type="button" data-act="dec" data-id="${id}" aria-label="Remove one">-</button>
+       <strong>${q}</strong>
+       <button type="button" data-act="inc" data-id="${id}" aria-label="Add one">+</button>`;
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (b){
+    const id = b.dataset.id; const q = state.cart[id] || 0;
+    state.cart[id] = b.dataset.act === "inc" ? q + 1 : Math.max(0, q - 1);
+    if (!state.cart[id]) delete state.cart[id];
+    store.set("plated_cart", state.cart); renderQty(id); renderCart(); return;
+  }
+  const m = e.target.closest(".modes button"); if (m) setMode(m.dataset.mode);
+  const again = e.target.closest("[data-again]"); if (again) reorder(again.dataset.again);
+});
+
+/* ---------- cart + totals ---------- */
+function totals(){
+  const lines = MENU.filter(i => state.cart[i.id]).map(i => ({...i, qty: state.cart[i.id]}));
+  const sub = lines.reduce((s,l) => s + l.price*l.qty, 0);
+  const gst = sub * CONFIG.gstRate;
+  const delivery = state.mode === "delivery" && sub > 0 && sub < CONFIG.freeDeliveryAbove ? CONFIG.deliveryFee : 0;
+  return { lines, sub, gst, delivery, total: sub + gst + delivery };
+}
+function renderCart(){
+  const t = totals();
+  if (!t.lines.length){ $("cart").innerHTML = `<p class="empty">Your cart is empty. Add a plate to begin.</p>`; return; }
+  $("cart").innerHTML = t.lines.map(l => `<div class="row"><span>${l.qty} x ${esc(l.name)}</span><span>${rupee(l.price*l.qty)}</span></div>`).join("") +
+    `<div class="row"><span>GST (${CONFIG.gstRate*100}%)</span><span>${rupee(t.gst)}</span></div>` +
+    (state.mode === "delivery" ? `<div class="row"><span>Delivery</span><span>${t.delivery ? rupee(t.delivery) : "Free"}</span></div>` : "") +
+    `<div class="row total"><span>Total</span><span>${rupee(t.total)}</span></div>`;
+}
+
+/* ---------- place order ---------- */
+$("form").addEventListener("submit", e => {
+  e.preventDefault();
+  const err = msg => { $("err").textContent = msg; return false; };
+  const t = totals(); $("err").textContent = "";
+  const name = $("name").value.trim(), phone = $("phone").value.trim();
+  if (!t.lines.length) return err("Add at least one plate to your order.");
+  if (name.length < 2) return err("Enter your name.");
+  if (!/^[6-9]\d{9}$/.test(phone)) return err("Enter a valid 10-digit Indian mobile number.");
+
+  const o = {
+    id: "PL-" + Date.now().toString(36).slice(-5).toUpperCase(),
+    mode: state.mode, name, phone, notes: $("notes").value.trim(),
+    ref: $("ref").value.trim().toUpperCase(), sms: $("sms").checked,
+    lines: t.lines.map(l => ({name:l.name, qty:l.qty, price:l.price})),
+    total: Math.round(t.total), at: new Date().toISOString(), status: 0
+  };
+  if (state.mode === "dinein"){
+    o.table = $("table").value; if (!o.table) return err("Enter your table number.");
+  } else if (state.mode === "takeaway"){
+    o.pickup = $("pickup").value; if (!o.pickup) return err("We're closed right now. Pick a time during opening hours.");
+  } else {
+    o.address = $("address").value.trim();
+    if (o.address.length < 10) return err("Enter your full delivery address.");
+    if (t.sub < CONFIG.minDelivery) return err("Minimum order for delivery is " + rupee(CONFIG.minDelivery) + ".");
+  }
+  o.points = Math.floor(o.total / CONFIG.pointsPerRupees);
+
+  // save locally: order history, profile, loyalty points
+  const orders = store.get("plated_orders", []); orders.unshift(o); store.set("plated_orders", orders.slice(0, 20));
+  store.set("plated_profile", {name, phone});
+  const pts = store.get("plated_points", {}); pts[phone] = (pts[phone] || 0) + o.points; store.set("plated_points", pts);
+
+  // send to restaurant on WhatsApp
+  const labels = {dinein:"DINE-IN", takeaway:"TAKEAWAY", delivery:"DELIVERY"};
+  let msg = `*New ${labels[o.mode]} order ${o.id}*\n`;
+  o.lines.forEach(l => msg += `${l.qty} x ${l.name}\n`);
+  msg += `\nTotal: ${rupee(o.total)} (incl. GST)\nName: ${o.name}\nPhone: ${o.phone}\n`;
+  if (o.table) msg += `Table: ${o.table}\n`;
+  if (o.pickup) msg += `Pickup: ${o.pickup}\n`;
+  if (o.address) msg += `Address: ${o.address}\n`;
+  if (o.notes) msg += `Notes: ${o.notes}\n`;
+  if (o.ref) msg += `Referred by: ${o.ref}\n`;
+  msg += `SMS offers: ${o.sms ? "Yes" : "No"}`;
+  window.open(`https://wa.me/${CONFIG.ownerWhatsApp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+
+  state.cart = {}; store.set("plated_cart", state.cart);
+  MENU.forEach(i => renderQty(i.id)); renderCart();
+  showConfirmation(o, pts[phone]); renderHistory();
+});
+
+/* ---------- confirmation + simple status tracker ---------- */
+const STEPS = ["Received","Preparing","Ready"];
+function showConfirmation(o, totalPts){
+  const where = o.mode === "dinein" ? `Table ${esc(o.table)}` : o.mode === "takeaway" ? `Pickup at ${esc(o.pickup)}` : "Delivering to " + esc(o.address);
+  $("confirmation").hidden = false;
+  $("confirmation").innerHTML = `
+    <div class="done">
+      <span class="badge">${o.mode === "dinein" ? "Dine-in" : o.mode === "takeaway" ? "Takeaway" : "Delivery"}</span>
+      <div class="id">${o.id}</div>
+      <div>${where} &middot; ${rupee(o.total)}</div>
+      <div class="steps">${STEPS.map((s,i)=>`<span class="${i<=o.status?"on":""}">${s}</span>`).join("")}</div>
+      <p style="margin:0">You earned <strong>${o.points} Plated points</strong> (balance: ${totalPts}).
+      Finish sending the WhatsApp message so the kitchen gets your order.</p>
+    </div>`;
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ---------- order history + reorder (works across all 3 channels) ---------- */
+function renderHistory(){
+  const orders = store.get("plated_orders", []);
+  $("history").innerHTML = orders.length ? orders.slice(0,5).map(o => `
+    <div class="hist">
+      <strong>${esc(o.id)}</strong> &middot; ${esc(o.mode)} &middot; ${rupee(o.total)}<br>
+      <span class="empty">${new Date(o.at).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</span>
+      &nbsp;<button type="button" class="link" data-again="${esc(o.id)}">Order again</button>
+    </div>`).join("") : `<p class="empty">No orders yet.</p>`;
+}
+function reorder(id){
+  const o = store.get("plated_orders", []).find(x => x.id === id); if (!o) return;
+  state.cart = {};
+  o.lines.forEach(l => { const m = MENU.find(i => i.name === l.name); if (m) state.cart[m.id] = l.qty; });
+  store.set("plated_cart", state.cart); MENU.forEach(i => renderQty(i.id)); renderCart();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ---------- boot ---------- */
+renderMenu(); buildPickupSlots(); setMode(state.mode); renderHistory();
+</script>
+</body>
+</html>
