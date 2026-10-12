@@ -58,3 +58,27 @@ footer .logo{color:#fff;font-size:2.6rem}footer a{display:block;text-decoration:
 .qty{display:flex;align-items:center;gap:14px}.qty button{width:32px;height:32px;border:1px solid var(--forest);background:none;font-size:1.1rem;cursor:pointer}
 #done{margin-top:30px;border:1px solid var(--gold);padding:28px}#done h3{font-size:2rem;margin-bottom:10px}
 @media(max-width:800px){.row{flex-wrap:wrap}.modes button{padding:12px 16px}}
+
+/* =====================================================================
+   PLATED CIRCLE FIXES: light text on dark backgrounds
+   ===================================================================== */
+
+/* 1) Circle page top banner (dark green) */
+.page-top.circle,.page-top.dark,.page-top.forest,.page-top[class*="circle"],.circle-top,.circle-hero{background:var(--forest);color:var(--ivory)}
+.page-top.circle h1,.page-top.dark h1,.page-top.forest h1,.page-top[class*="circle"] h1,.circle-top h1,.circle-hero h1,
+.page-top.circle p,.page-top.dark p,.page-top.forest p,.page-top[class*="circle"] p,.circle-top p,.circle-hero p{color:var(--ivory)!important}
+.page-top.circle .btn,.page-top.dark .btn,.page-top.forest .btn,.page-top[class*="circle"] .btn,.circle-top .btn,.circle-hero .btn{background:var(--ivory);border-color:var(--ivory);color:var(--forest)!important}
+.page-top.circle .btn:hover,.page-top.dark .btn:hover,.page-top.forest .btn:hover,.page-top[class*="circle"] .btn:hover,.circle-top .btn:hover,.circle-hero .btn:hover{background:transparent;color:var(--ivory)!important}
+
+/* 2) Member card (dark card with Silver / Gold / Black, points, progress bar) */
+.member-card,.membercard,.mcard,.membership-card,.circle-card,.pass,.id-card,
+.member-card *,.membercard *,.mcard *,.membership-card *,.circle-card *,.pass *,.id-card *{color:var(--ivory)!important}
+.member-card strong,.member-card b,.member-card .points,.member-card .big,.member-card .pts,
+.membercard strong,.mcard strong,.membership-card strong,.circle-card strong,.pass strong,.id-card strong{color:#d8c28a!important}
+
+/* 3) UNIVERSAL FIX: add class="on-dark" to ANY dark box in circle.html
+      and all its text becomes readable. Works even if the class names above don't match. */
+.on-dark,.on-dark *{color:var(--ivory)!important}
+.on-dark strong,.on-dark b,.on-dark .big,.on-dark .points{color:#d8c28a!important}
+.on-dark .btn{background:var(--ivory);border-color:var(--ivory);color:var(--forest)!important}
+.on-dark input,.on-dark select,.on-dark textarea{border-bottom-color:rgba(246,247,241,.5);color:var(--ivory)!important}
