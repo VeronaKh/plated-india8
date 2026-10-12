@@ -67,7 +67,18 @@ th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);verti
 #mInfo .dish{font-family:var(--display);font-size:1.9rem;line-height:1.2;margin:6px 0}
 #mInfo .code{display:inline-block;border:1px dashed var(--saffron);padding:8px 14px;margin-top:14px;letter-spacing:.12em;font-family:var(--display)}
 .locked{opacity:.45;pointer-events:none}
-@media(prefers-reduced-motion:reduce){#mCloche,#mDish{transition:none}#loopSvg .pulse{animation:none;opacity:0}.wheel-wrap canvas{transition:none}</style>
+#mSvg{overflow:visible;cursor:pointer}
+#mCloche{transform-box:view-box;transform-origin:150px 186px;transition:transform 1.1s cubic-bezier(.3,.7,.2,1)}
+#mCloche.lift{transform:translate(0,-95px) rotate(-8deg)}
+#mDish{opacity:0;transition:opacity .6s .4s}
+#mDish.show{opacity:1}
+@media(prefers-reduced-motion:reduce){
+  #mCloche{transition-duration:.3s}
+  #mDish{transition-duration:.2s;transition-delay:0s}
+  #loopSvg .pulse{animation:none;opacity:0}
+  .wheel-wrap canvas{transition:none}
+}
+</style>#loopSvg .pulse{animation:none;opacity:0}.wheel-wrap canvas{transition:none}</style>}
 </head>
 <body>
 
@@ -97,7 +108,7 @@ th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);verti
   <section id="loop">
     <h2>The Circle loop</h2>
     <p class="sub">Every visit takes you one stop round. Tap any stop to jump to it. Your own progress lights up as you go.</p>
-    <div class="panel loopbox"><svg id="loopSvg" viewBox="0 0 560 480" role="group" aria-label="Plated Circle loyalty loop"></svg></div>
+    <div class="panel loopbox"><svg id="mSvg" viewBox="0 -60 300 290" role="img" aria-label="A covered plate"></svg></div>
   </section>
 
   <!-- JOIN + MEMBER CARD -->
