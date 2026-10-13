@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Virtual Tour | Plated</title>
+<meta name="description" content="Walk through Plated before you visit. A 3D tour of the restaurant, in your browser or VR headset.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<style>
+  :root{--ink:#23312a;--forest:#33463a;--sage:#a9bca4;--pastel:#d5e0cf;--ivory:#f6f7f1;--gold:#b19a68}
+  html,body{margin:0;height:100%;background:#1d241f;font-family:'Jost',system-ui,sans-serif;color:var(--ink);overflow:hidden}
+  a-scene{position:fixed;inset:0}
+  .bar{position:fixed;z-index:20;display:flex;gap:10px;flex-wrap:wrap}
+  .top{top:14px;left:14px;right:14px;justify-content:space-between;align-items:center;pointer-events:none}
+  .top>*{pointer-events:auto}
+  .pill{background:rgba(246,247,241,.92);color:var(--forest);border:1px solid var(--gold);padding:10px 18px;font:500 .9rem 'Jost',sans-serif;letter-spacing:.06em;text-decoration:none;cursor:pointer;border-radius:999px;backdrop-filter:blur(8px)}
+  .pill:hover{background:var(--forest);color:var(--ivory)}
+  .pill.solid{background:var(--forest);color:var(--ivory)}
+  .pill.solid:hover{background:var(--ivory);color:var(--forest)}
+  .logo{font:600 1.6rem 'Cormorant Garamond',Georgia,serif;letter-spacing:.14em;color:var(--ivory);text-decoration:none;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+  .bottom{bottom:max(16px,env(safe-area-inset-bottom));left:14px;right:14px;justify-content:center}
+  #card{position:fixed;z-index:25;left:50%;bottom:92px;transform:translateX(-50%);width:min(92vw,380px);background:var(--ivory);border:1px solid var(--gold);padding:22px 24px;display:none;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  #card h3{margin:0 0 4px;font:600 1.7rem/1.1 'Cormorant Garamond',serif}
+  #card p{margin:0 0 12px;font-size:.95rem;line-height:1.5}
+  #card b{color:var(--gold);font:600 1.4rem 'Cormorant Garamond',serif}
+  #card .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  #cardClose{position:absolute;right:12px;top:6px;background:none;border:0;font-size:1.6rem;cursor:pointer;color:var(--ink)}
+  #hint{position:fixed;z-index:15;left:50%;top:64px;transform:translateX(-50%);color:var(--ivory);font-size:.9rem;letter-spacing:.04em;background:rgba(35,49,42,.7);padding:8px 16px;border-radius:999px;text-align:center;max-width:90vw;transition:opacity .8s}
+  #loader{position:fixed;inset:0;z-index:50;background:var(--forest);color:var(--ivory);display:grid;place-items:center;text-align:center;transition:opacity .8s}
+  #loader h1{font:500 clamp(2.4rem,8vw,4.5rem) 'Cormorant Garamond',serif;letter-spacing:.14em;margin:0 0 8px}
+  #loader p{margin:0;opacity:.8}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  @media(prefers-reduced-motion:reduce){#loader,#hint{transition:none}}
+</style>
+</head>
+<body>
+
+<div id="loader"><div><h1>Plated</h1><p>Setting the tables...</p></div></div>
+
+<div class="bar top">
+  <a class="logo" href="index.html">Plated</a>
+  <div class="bar" style="position:static">
+    <a class="pill" href="menu.html">Menu</a>
+    <a class="pill solid" href="contact.html#reserve">Book a table</a>
+  </div>
+</div>
+
+<div id="hint">Drag to look around. Tap the gold dots to see each plate.</div>
+
+<div id="card" role="dialog" aria-live="polite">
+  <button id="cardClose" aria-label="Close">&times;</button>
+  <h3 id="cName"></h3><p id="cDesc"></p>
+  <div class="row"><b id="cPrice"></b><a class="pill solid" href="menu.html">Order this plate</a></div>
+</div>
+
+<div class="bar bottom">
+  <button class="pill" id="tourBtn">Pause tour</button>
+  <button class="pill" id="resetBtn">Reset view</button>
+  <button class="pill" id="panoBtn" hidden>360 photo mode</button>
+</div>
+
+<a-scene vr-mode-ui="enabled: true" loading-screen="enabled: false" device-orientation-permission-ui="enabled: true">
+
+  <!-- Camera rig: the auto tour moves and gently turns this rig -->
+  <a-entity id="rig" position="1.75 0 4.4"
+    animation__move="property: position; from: 1.75 0 4.4; to: 1.75 0 -2.8; dur: 18000; dir: alternate; loop: true; easing: easeInOutSine"
+    animation__turn="property: rotation; from: 0 -22 0; to: 0 22 0; dur: 9000; dir: alternate; loop: true; easing: easeInOutSine">
+    <a-entity id="cam" camera look-controls="reverseMouseDrag: false" wasd-controls="acceleration: 18"
+      cursor="rayOrigin: mouse" raycaster="objects: .hot; far: 12" position="0 1.6 0"></a-entity>
+    <a-entity laser-controls="hand: right" raycaster="objects: .hot; far: 12"></a-entity>
+    <a-entity laser-controls="hand: left" raycaster="objects: .hot; far: 12"></a-entity>
+  </a-entity>
+
+  <!-- 360 photo mode (only used if restaurant360.jpg exists next to this file) -->
+  <a-sky id="pano" visible="false" radius="60"></a-sky>
+
+  <!-- The whole restaurant is built by the script below -->
+  <a-entity id="room"></a-entity>
+</a-scene>
+
+<script>
+/* ============================ EDIT THIS ============================ */
+const DISHES = [
+  { name:"Creamy Chicken Penne",        desc:"Garlic bread, basil, parmesan",                    price:"₹695", color:"#e8c98b" },
+  { name:"Gochujang Chicken Bibimbap",  desc:"Sunny egg, pickled carrot, cucumber, rice",        price:"₹895", color:"#b5532f" },
+  { name:"Cilantro Lime Chicken Plate", desc:"Black beans, guacamole, pico de gallo",            price:"₹745", color:"#7fa05a" },
+  { name:"Chicken Fettuccine Alfredo",  desc:"Shaved parmesan, basil, garlic toast",             price:"₹725", color:"#f0dfb4" },
+  { name:"Matcha Basque Cheesecake",    desc:"Roasted hazelnut, cacao, vanilla ice cream",       price:"₹495", color:"#8aa35b" },
+  { name:"Belgian Chocolate Lava Cake", desc:"Caramel, cocoa nib, malted milk ice cream",        price:"₹525", color:"#4a2a1c" }
+];
+// Dish photos hung on the left wall (files already on your site)
+const FRAMES = ["alfredo.jpg","penne.jpg","bibimbap.jpg","burrito.jpg"];
+/* ================================================================== */
+
+const room = document.getElementById('room');
+const rig  = document.getElementById('rig');
+function el(tag, attrs, parent){
+  const e = document.createElement(tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  (parent || room).appendChild(e);
+  return e;
+}
+const rnd = (a,b) => a + Math.random()*(b-a);
+
+/* ---------- lights ---------- */
+el('a-light', {type:'hemisphere', color:'#fff0d6', groundColor:'#6a553c', intensity:0.45});
+el('a-light', {type:'ambient', color:'#ffe7c4', intensity:0.2});
+
+/* ---------- shell: floor, ceiling, walls ---------- */
+el('a-plane', {rotation:'-90 0 0', width:12, height:10, color:'#8a6a48', roughness:1});
+el('a-plane', {position:'0 3.6 0', rotation:'90 0 0', width:12, height:10, color:'#f2efe6'});
+[[0,-5,0,12],[0,5,180,12],[-6,0,90,10],[6,0,-90,10]].forEach(([x,z,ry,w])=>{
+  const px = (ry===90||ry===-90) ? x : x, pz = z;
+  el('a-plane', {position:`${px} 1.8 ${pz}`, rotation:`0 ${ry} 0`, width:w, height:3.6, color:'#dfe8da'});
+  el('a-box',   {position:`${px} 0.55 ${pz}`, rotation:`0 ${ry} 0`, width:w, height:1.1, depth:0.06, color:'#33463a'});
+});
+// ceiling beams
+[-3.2,0,3.2].forEach(z => el('a-box', {position:`0 3.5 ${z}`, width:12, height:0.12, depth:0.16, color:'#5a4630'}));
+
+/* ---------- back wall sign ---------- */
+el('a-text', {value:'Plated', position:'0 2.65 -4.93', align:'center', width:9, color:'#e6cf9a'});
+el('a-text', {value:'one plate. whole world.', position:'0 2.2 -4.93', align:'center', width:4.2, color:'#c9d8c4'});
+el('a-light', {type:'point', color:'#ffd58a', intensity:0.5, distance:6, position:'0 2.4 -4.2'});
+
+/* ---------- framed dish photos on the left wall ---------- */
+FRAMES.forEach((src,i)=>{
+  const z = -3.6 + i*2.4;
+  el('a-box',   {position:`-5.96 1.95 ${z}`, rotation:'0 90 0', width:1.2, height:1.5, depth:0.04, color:'#b19a68'});
+  el('a-image', {src, position:`-5.93 1.95 ${z}`, rotation:'0 90 0', width:1.06, height:1.36});
+});
+
+/* ---------- window on the right wall ---------- */
+el('a-box',   {position:'5.96 2.0 -2.5', rotation:'0 -90 0', width:2.7, height:1.7, depth:0.04, color:'#b19a68'});
+el('a-plane', {position:'5.93 2.0 -2.5', rotation:'0 -90 0', width:2.5, height:1.5, color:'#26365e', material:'shader:flat'});
+el('a-sphere',{position:'5.9 2.3 -2.1', radius:0.12, color:'#fff6d6', material:'shader:flat'});
+
+/* ---------- bar counter with bottles ---------- */
+el('a-box', {position:'3.6 0.55 -4.1', width:4.4, height:1.1, depth:1.0, color:'#33463a'});
+el('a-box', {position:'3.6 1.12 -4.1', width:4.5, height:0.06, depth:1.1, color:'#b19a68'});
+el('a-box', {position:'3.6 1.6 -4.85', width:4.2, height:0.05, depth:0.3, color:'#5a4630'});
+['#7fa05a','#b5532f','#d8c28a','#a9bca4','#e6cf9a','#7fa05a','#b5532f','#d8c28a'].forEach((c,i)=>{
+  el('a-cylinder', {position:`${1.9+i*0.5} 1.82 -4.85`, radius:0.06, height:0.4, color:c, opacity:0.9});
+});
+
+/* ---------- plants ---------- */
+[[-5.3,-4.3],[5.3,4.3],[-5.3,4.3]].forEach(([x,z])=>{
+  el('a-cylinder', {position:`${x} 0.25 ${z}`, radius:0.28, height:0.5, color:'#b9714a'});
+  const leaves = el('a-entity', {position:`${x} 0.55 ${z}`,
+    animation:`property: rotation; from: 0 0 -1.5; to: 0 0 1.5; dur:${Math.round(rnd(3500,5500))}; dir: alternate; loop: true; easing: easeInOutSine`});
+  [[0,0.35,0,0.34],[0.15,0.7,0.05,0.28],[-0.14,0.62,-0.06,0.26]].forEach(([a,b,c,r])=>{
+    el('a-sphere', {position:`${a} ${b} ${c}`, radius:r, color:'#4c7a47', roughness:1}, leaves);
+  });
+});
+
+/* ---------- tables, chairs, lamps, plates, steam ---------- */
+const spots = [[-3.5,-1.8],[0,-1.8],[3.5,-1.8],[-3.5,1.6],[0,1.6],[3.5,1.6]];
+spots.forEach(([x,z],i)=>{
+  const d = DISHES[i];
+  // table
+  el('a-cylinder', {position:`${x} 0.76 ${z}`, radius:0.62, height:0.05, color:'#f6f7f1'});
+  el('a-cylinder', {position:`${x} 0.37 ${z}`, radius:0.06, height:0.74, color:'#23312a'});
+  el('a-cylinder', {position:`${x} 0.015 ${z}`, radius:0.3, height:0.03, color:'#23312a'});
+  // plate + food
+  el('a-cylinder', {position:`${x} 0.80 ${z}`, radius:0.23, height:0.02, color:'#ffffff'});
+  el('a-cylinder', {position:`${x} 0.83 ${z}`, radius:0.14, height:0.05, color:d.color});
+  el('a-sphere',   {position:`${x} 0.87 ${z}`, radius:0.09, color:d.color, scale:'1 0.6 1'});
+  // candle
+  el('a-cylinder', {position:`${x+0.38} 0.82 ${z-0.2}`, radius:0.03, height:0.08, color:'#fffaf0'});
+  el('a-sphere',   {position:`${x+0.38} 0.89 ${z-0.2}`, radius:0.02, color:'#ffb347', material:'shader:flat',
+    animation:`property: scale; from: 1 1 1; to: 1.4 1.8 1.4; dur:${Math.round(rnd(250,450))}; dir: alternate; loop: true; easing: easeInOutSine`});
+  // steam
+  for (let s=0;s<3;s++){
+    el('a-sphere', {position:`${x+rnd(-0.05,0.05)} 0.92 ${z+rnd(-0.05,0.05)}`, radius:0.035, color:'#ffffff', material:'transparent:true; opacity:0.35; shader:flat',
+      animation__rise:`property: position.y; from: 0.92; to: 1.3; dur: 2600; delay:${s*850}; loop: true; easing: linear`,
+      animation__fade:`property: material.opacity; from: 0.4; to: 0; dur: 2600; delay:${s*850}; loop: true; easing: linear`});
+  }
+  // chairs (left and right of the table, facing in)
+  [[-0.95,90],[0.95,-90]].forEach(([dx,ry])=>{
+    const c = el('a-entity', {position:`${x+dx} 0 ${z}`, rotation:`0 ${ry} 0`});
+    el('a-box', {position:'0 0.46 0',     width:0.5, height:0.06, depth:0.5, color:'#b19a68'}, c);
+    el('a-box', {position:'0 0.78 -0.23', width:0.5, height:0.55, depth:0.05, color:'#b19a68'}, c);
+    [[-0.2,-0.2],[0.2,-0.2],[-0.2,0.2],[0.2,0.2]].forEach(([lx,lz])=>
+      el('a-cylinder', {position:`${lx} 0.22 ${lz}`, radius:0.02, height:0.44, color:'#23312a'}, c));
+  });
+  // pendant lamp (swings)
+  const pivot = el('a-entity', {position:`${x} 3.6 ${z}`,
+    animation:`property: rotation; from: 0 0 -2; to: 0 0 2; dur:${Math.round(rnd(3200,4800))}; dir: alternate; loop: true; easing: easeInOutSine`});
+  el('a-cylinder', {position:'0 -0.55 0', radius:0.008, height:1.1, color:'#23312a'}, pivot);
+  el('a-cylinder', {position:'0 -1.15 0', 'radius-top':0.06, 'radius-bottom':0.2, height:0.22, color:'#b19a68', 'open-ended':true, material:'side:double'}, pivot);
+  el('a-sphere',   {position:'0 -1.2 0', radius:0.07, color:'#ffe2a8', material:'shader:flat'}, pivot);
+  el('a-light',    {type:'point', color:'#ffd9a0', intensity:0.6, distance:5, decay:2, position:'0 -1.3 0'}, pivot);
+  // hotspot (big invisible target + small gold marker)
+  const hot = el('a-sphere', {class:'hot', position:`${x} 1.2 ${z}`, radius:0.32, material:'transparent:true; opacity:0'});
+  el('a-sphere', {position:'0 0 0', radius:0.07, color:'#e6cf9a', material:'shader:flat',
+    animation:'property: scale; from: 1 1 1; to: 1.6 1.6 1.6; dur: 900; dir: alternate; loop: true; easing: easeInOutSine'}, hot);
+  hot.addEventListener('click', () => showCard(d));
+});
+
+/* ---------- info card ---------- */
+const card = document.getElementById('card');
+function showCard(d){
+  document.getElementById('cName').textContent  = d.name;
+  document.getElementById('cDesc').textContent  = d.desc;
+  document.getElementById('cPrice').textContent = d.price;
+  card.style.display = 'block';
+}
+document.getElementById('cardClose').onclick = () => card.style.display = 'none';
+
+/* ---------- auto tour on/off ---------- */
+let touring = true;
+function setTour(on){
+  touring = on;
+  ['animation__move','animation__turn'].forEach(a => rig.setAttribute(a, 'enabled', on));
+  document.getElementById('tourBtn').textContent = on ? 'Pause tour' : 'Start auto tour';
+}
+document.getElementById('tourBtn').onclick = () => setTour(!touring);
+document.getElementById('resetBtn').onclick = () => {
+  setTour(false);
+  rig.setAttribute('position', '1.75 0 4.4');
+  rig.setAttribute('rotation', '0 0 0');
+  document.getElementById('cam').components['look-controls'].yawObject.rotation.y = 0;
+};
+
+/* ---------- loader, hint, VR ---------- */
+const scene = document.querySelector('a-scene');
+function ready(){
+  const l = document.getElementById('loader');
+  l.style.opacity = 0; setTimeout(()=>l.remove(), 900);
+  setTimeout(()=>document.getElementById('hint').style.opacity = 0, 7000);
+}
+if (scene.hasLoaded) ready(); else scene.addEventListener('loaded', ready);
+scene.addEventListener('enter-vr', () => setTour(false));   // no moving camera in a headset
+
+/* ---------- optional 360 photo mode ----------
+   Put a 2:1 panorama named restaurant360.jpg in the same folder and a button appears. */
+const probe = new Image();
+probe.onload = () => {
+  const pano = document.getElementById('pano'), btn = document.getElementById('panoBtn');
+  pano.setAttribute('src', 'restaurant360.jpg');
+  btn.hidden = false;
+  let on = false;
+  btn.onclick = () => {
+    on = !on;
+    pano.setAttribute('visible', on);
+    room.setAttribute('visible', on ? false : true);
+    btn.textContent = on ? 'Back to 3D tour' : '360 photo mode';
+    if (on) setTour(false);
+  };
+};
+probe.src = 'restaurant360.jpg';
+</script>
+</body>
+</html>
